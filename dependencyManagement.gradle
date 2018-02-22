@@ -1,0 +1,23 @@
+apply plugin: 'java'
+apply plugin: 'io.spring.dependency-management'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	jcenter()
+	mavenLocal()
+	mavenCentral()
+}
+
+dependencyManagement {
+	imports {
+		//mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+		//bom with testng
+		mavenBom("io.spring.platform:platform-bom:${platformBomVersion}")
+	}
+}
+
+dependencies {
+	testCompile 'org.testng:testng'
+}

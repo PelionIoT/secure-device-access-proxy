@@ -1,0 +1,12 @@
+*.classpath
+*.gradle/
+*.project
+*/.settings/
+*.settings/
+*/bin*
+test-output/
+.keystore
+devices.txt
+trust-anchor.txt
+token.txt
+/build/

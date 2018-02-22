@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--                                                                         -->
+<!-- The confidential and proprietary information contained in this file may -->
+<!-- only be used by a person authorized under and to the extent permitted   -->
+<!-- by a subsisting licensing agreement from ARM Limited or its affiliates. -->
+<!--                                                                         -->
+<!--         (C)COPYRIGHT 2018 ARM Limited or its affiliates.                -->
+<!--             ALL RIGHTS RESERVED                                         -->
+<!--                                                                         -->
+<!-- This entire notice must be reproduced on all copies of this file        -->
+<!-- and copies of this file may only be made by a person if such person is  -->
+<!-- permitted to do so under the terms of a subsisting license agreement    -->
+<!-- from ARM Limited or its affiliates.                                     -->
+<!--                                                                         -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.arm.armsda">
+
+    <uses-feature android:name="android.hardware.usb.host" />
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- To auto-complete the email text field in the login form with the user's emails -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_PROFILE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".activities.LoginActivity"
+            android:label="@string/title_activity_login"
+            android:windowSoftInputMode="stateHidden">
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
+        </activity>
+        <activity android:name=".activities.AccessTokenActivity" android:label="Get Permissions - Access Token"/>
+        <activity android:name=".activities.SendMessageUsbActivity" android:label="Send Message to serial device"/>
+        <activity android:name=".activities.SettingsActivity" android:label="Settings"/>
+    </application>
+
+</manifest>

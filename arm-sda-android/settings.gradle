@@ -1,0 +1,3 @@
+include ':app', ':usbSerialForAndroid'
+include 'proxy'
+project(':proxy').projectDir = new File('../proxy')

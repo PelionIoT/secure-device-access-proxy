@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--                                                                         -->
+<!-- The confidential and proprietary information contained in this file may -->
+<!-- only be used by a person authorized under and to the extent permitted   -->
+<!-- by a subsisting licensing agreement from ARM Limited or its affiliates. -->
+<!--                                                                         -->
+<!--         (C)COPYRIGHT 2018 ARM Limited or its affiliates.                -->
+<!--             ALL RIGHTS RESERVED                                         -->
+<!--                                                                         -->
+<!-- This entire notice must be reproduced on all copies of this file        -->
+<!-- and copies of this file may only be made by a person if such person is  -->
+<!-- permitted to do so under the terms of a subsisting license agreement    -->
+<!-- from ARM Limited or its affiliates.                                     -->
+<!--                                                                         -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.arm.armsda.oldies.SendMessageActivity">
+
+    <TextView
+        android:id="@+id/DeviceIpLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/SendMsgButton"
+        android:layout_marginTop="17dp"
+        android:text="@string/device_ip_label" />
+
+    <EditText
+        android:id="@+id/DeviceIpInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/DeviceIpLabel"
+        android:layout_below="@+id/DeviceIpLabel"
+        android:ems="10"
+        android:inputType="textPersonName" />
+
+    <TextView
+        android:id="@+id/DevicePortLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/DeviceIpInput"
+        android:layout_below="@+id/DeviceIpInput"
+        android:layout_marginTop="13dp"
+        android:text="@string/device_port_label" />
+
+    <EditText
+        android:id="@+id/DevicePortInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/DevicePortLabel"
+        android:layout_below="@+id/DevicePortLabel"
+        android:ems="10"
+        android:inputType="textPersonName" />
+
+    <TextView
+        android:id="@+id/TokenNameLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/DevicePortInput"
+        android:layout_below="@+id/DevicePortInput"
+        android:layout_marginTop="14dp"
+        android:text="@string/token_name_label" />
+
+    <EditText
+        android:id="@+id/ChooseTokenInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/TokenNameLabel"
+        android:layout_below="@+id/TokenNameLabel"
+        android:ems="10"
+        android:inputType="textPersonName" />
+
+    <Button
+        android:id="@+id/SendMsgButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/ResponseStatusLabel"
+        android:layout_below="@+id/ChooseTokenInput"
+        android:layout_marginTop="18dp"
+        android:text="@string/go_button" />
+
+    <TextView
+        android:id="@+id/ResponseStatusLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/SendMsgButton"
+        android:layout_marginStart="17dp"
+        android:layout_marginTop="26dp"
+        android:text="@string/response_status_label" />
+
+    <TextView
+        android:id="@+id/ResponseStatusResult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/ResponseStatusLabel"
+        android:layout_below="@+id/ResponseStatusLabel"
+        android:layout_marginTop="11dp"
+        android:text="@string/na" />
+
+    <TextView
+        android:id="@+id/ResponseTypeLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/ResponseStatusResult"
+        android:layout_below="@+id/ResponseStatusResult"
+        android:layout_marginTop="21dp"
+        android:text="@string/response_type_label" />
+
+    <TextView
+        android:id="@+id/ResponseTypeResult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/ResponseTypeLabel"
+        android:layout_below="@+id/ResponseTypeLabel"
+        android:layout_marginTop="11dp"
+        android:text="@string/na" />
+
+</RelativeLayout>

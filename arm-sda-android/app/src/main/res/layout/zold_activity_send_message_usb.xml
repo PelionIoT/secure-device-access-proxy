@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--                                                                         -->
+<!-- The confidential and proprietary information contained in this file may -->
+<!-- only be used by a person authorized under and to the extent permitted   -->
+<!-- by a subsisting licensing agreement from ARM Limited or its affiliates. -->
+<!--                                                                         -->
+<!--         (C)COPYRIGHT 2018 ARM Limited or its affiliates.                -->
+<!--             ALL RIGHTS RESERVED                                         -->
+<!--                                                                         -->
+<!-- This entire notice must be reproduced on all copies of this file        -->
+<!-- and copies of this file may only be made by a person if such person is  -->
+<!-- permitted to do so under the terms of a subsisting license agreement    -->
+<!-- from ARM Limited or its affiliates.                                     -->
+<!--                                                                         -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.arm.armsda.oldies.OldSendMessageUsbActivity">
+
+    <Button
+        android:id="@+id/LoadUsbDevicesButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="31dp"
+        android:text="@string/load_usb_devices" />
+
+    <Button
+        android:id="@+id/UsbButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/LoadUsbDevicesButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="44dp"
+        android:text="Connect Device" />
+
+    <Button
+        android:id="@+id/ReadDataButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/UsbButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="42dp"
+        android:text="Read Data" />
+
+    <Button
+        android:id="@+id/ConfigureButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/ReadDataButton"
+        android:layout_below="@+id/ReadDataButton"
+        android:layout_marginTop="40dp"
+        android:text="Configure" />
+</RelativeLayout>
+
+

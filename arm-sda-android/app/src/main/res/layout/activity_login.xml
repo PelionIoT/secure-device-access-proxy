@@ -1,0 +1,134 @@
+<!--                                                                         -->
+<!-- The confidential and proprietary information contained in this file may -->
+<!-- only be used by a person authorized under and to the extent permitted   -->
+<!-- by a subsisting licensing agreement from ARM Limited or its affiliates. -->
+<!--                                                                         -->
+<!--         (C)COPYRIGHT 2018 ARM Limited or its affiliates.                -->
+<!--             ALL RIGHTS RESERVED                                         -->
+<!--                                                                         -->
+<!-- This entire notice must be reproduced on all copies of this file        -->
+<!-- and copies of this file may only be made by a person if such person is  -->
+<!-- permitted to do so under the terms of a subsisting license agreement    -->
+<!-- from ARM Limited or its affiliates.                                     -->
+<!--                                                                         -->
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true">
+
+            <ImageView
+                android:id="@+id/imageView3"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:layout_gravity="bottom"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="5dp"
+                app:srcCompat="@drawable/arm_mbed" />
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <!-- Sign in Form -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context="com.arm.armsda.activities.LoginActivity">
+
+        <!-- Login progress -->
+        <ProgressBar
+            android:id="@+id/login_progress"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="154dp" />
+
+        <ScrollView
+            android:id="@+id/login_form"
+            android:layout_width="match_parent"
+            android:layout_height="244dp">
+
+            <LinearLayout
+                android:id="@+id/email_login_form"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/prompt_email"
+                        android:inputType="textEmailAddress"
+                        android:textSize="18sp"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="22sp">
+
+                    <EditText
+                        android:id="@+id/password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/prompt_password"
+                        android:imeActionId="6"
+                        android:imeActionLabel="@string/action_sign_in_short"
+                        android:imeOptions="actionUnspecified"
+                        android:inputType="textPassword"
+                        android:maxLines="1"
+                        android:textSize="22sp"
+                        android:singleLine="true" />
+
+                </android.support.design.widget.TextInputLayout>
+
+                <Button
+                    android:id="@+id/email_sign_in_button"
+                    style="?android:textAppearanceSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/action_sign_in"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+</RelativeLayout>

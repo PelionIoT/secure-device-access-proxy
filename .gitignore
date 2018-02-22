@@ -1,0 +1,16 @@
+mbed-base/
+*.classpath
+*.gradle/
+*.project
+/mUUID/
+*/.settings/
+*.settings/
+*/bin*
+*/build/*
+/arm-sda-android/.idea/*
+/bin/*
+/examples/.keystore
+*proxy.iml
+/arm-sda-android/usbSerialForAndroid/build
+/proxy-dev/test-output/*
+/.metadata/*

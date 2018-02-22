@@ -1,0 +1,59 @@
+<!--                                                                         -->
+<!-- The confidential and proprietary information contained in this file may -->
+<!-- only be used by a person authorized under and to the extent permitted   -->
+<!-- by a subsisting licensing agreement from ARM Limited or its affiliates. -->
+<!--                                                                         -->
+<!--         (C)COPYRIGHT 2018 ARM Limited or its affiliates.                -->
+<!--             ALL RIGHTS RESERVED                                         -->
+<!--                                                                         -->
+<!-- This entire notice must be reproduced on all copies of this file        -->
+<!-- and copies of this file may only be made by a person if such person is  -->
+<!-- permitted to do so under the terms of a subsisting license agreement    -->
+<!-- from ARM Limited or its affiliates.                                     -->
+<!--                                                                         -->
+<resources>
+    <string name="app_name">SDA</string>
+
+
+    <!-- GUI -->
+    <string name="generate_access_token">Generate Access Token</string>
+    <string name="send_message">Send Message</string>
+    <string name="send_message_usb">Send Message USB</string>
+    <string name="exit">Exit</string>
+    <string name="version_number_label">Version Number:</string>
+
+    <string name="socket_timeout">Socket TIMEOUT</string>
+    <string name="username_label">Username:</string>
+    <string name="password_label">Password:</string>
+    <string name="account_id_label">AccountId:</string>
+    <string name="go_button">Go</string>
+    <string name="token_name_label">Token Name:</string>
+    <string name="save_button">Save</string>
+    <string name="access_token_label">Access Token:</string>
+    <string name="na">N/A</string>
+
+    <string name="device_ip_label">Device IP:</string>
+    <string name="device_port_label">Device Port:</string>
+    <string name="response_status_label">Response Status:</string>
+    <string name="response_type_label">Response Type:</string>
+
+    <string name="load_usb_devices">Load USB Devices</string>
+    <string name="title_activity_login">Login to API GW</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email or Username</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign In</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+
+</resources>

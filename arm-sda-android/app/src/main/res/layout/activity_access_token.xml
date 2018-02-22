@@ -1,0 +1,104 @@
+<!--                                                                         -->
+<!-- The confidential and proprietary information contained in this file may -->
+<!-- only be used by a person authorized under and to the extent permitted   -->
+<!-- by a subsisting licensing agreement from ARM Limited or its affiliates. -->
+<!--                                                                         -->
+<!--         (C)COPYRIGHT 2018 ARM Limited or its affiliates.                -->
+<!--             ALL RIGHTS RESERVED                                         -->
+<!--                                                                         -->
+<!-- This entire notice must be reproduced on all copies of this file        -->
+<!-- and copies of this file may only be made by a person if such person is  -->
+<!-- permitted to do so under the terms of a subsisting license agreement    -->
+<!-- from ARM Limited or its affiliates.                                     -->
+<!--                                                                         -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.arm.armsda.activities.AccessTokenActivity">
+
+
+    <CheckBox
+        android:id="@+id/ReadDataCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="114dp"
+        android:layout_marginTop="117dp"
+        android:textSize="22sp"
+        android:text="Read Data" />
+
+    <CheckBox
+        android:id="@+id/ConfigureCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/ReadDataCheckBox"
+        android:layout_below="@+id/ReadDataCheckBox"
+        android:layout_marginTop="35dp"
+        android:textSize="22sp"
+        android:text="Configure" />
+
+    <CheckBox
+        android:id="@+id/UpdateCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/ConfigureCheckBox"
+        android:layout_below="@+id/ConfigureCheckBox"
+        android:layout_marginTop="37dp"
+        android:textSize="22sp"
+        android:text="Update" />
+
+    <Button
+
+        android:theme="@style/AppTheme.Button"
+        android:id="@+id/GetPermissionsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/UpdateCheckBox"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="46dp"
+        android:textSize="22sp"
+        android:text="Get Permissions" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true">
+
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="bottom"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="5dp"
+            app:srcCompat="@drawable/arm_mbed" />
+    </RelativeLayout>
+
+    <EditText
+        android:id="@+id/DeviceNameEditText"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/ReadDataCheckBox"
+        android:layout_marginStart="26dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:textSize="22sp" />
+
+    <TextView
+        android:id="@+id/DeviceNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/DeviceNameEditText"
+        android:layout_alignBottom="@+id/DeviceNameEditText"
+        android:layout_alignParentStart="true"
+        android:text="Device Name:"
+        android:textSize="22sp" />
+
+</RelativeLayout>

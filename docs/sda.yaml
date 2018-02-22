@@ -1,0 +1,514 @@
+swagger: '2.0'
+host: api.us-east-1.mbedcloud.com
+basePath: /
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+info:
+  version: '1.0'
+  title: Mbed Secure Device Access Service.
+  description: >
+    Mbed Secure Device Access Service REST API. This document describes the
+    REST API of the device-based-auth service: endpoints, HTTP operations on
+    these endpoints and the required JSON input arguments to every
+    [endpoint,operation] tuple. JWT Authorization: all API's require an authorization header in the
+    following format: 'Authorization: Bearer <Base64 encoded JWT string>'.
+    The JWT token is checked to be current i.e. not expired, to include a valid
+    'iss' claim, a 'request_id' claim (of type MbedUUID), an 'account_id' claim
+    and with a valid signature. The 'iss' claim value must match one of the
+    issuers configured into the Mbed Secure Device Access Service on startup;
+    the signature is verified using the configured public key corresponding to
+    the issuer; the issuer is authorized to access the endpoint if one [or more]
+    of the roles configured to the issuer on startup overlaps one [or more] of
+    the roles permitted by the endpoint as detailed in this document.
+
+paths:
+
+  /ace-auth/token:
+    post:
+      tags:
+        - AccessToken
+      description: |
+        Generate a signed CWT. The SDA Proxy SDK uses this API to gain access to perform actions on the device(s) specified in the audience (aud). 
+
+        Authorized for roles: Service, ServiceAdministrator
+
+          Example:
+
+            {
+              "grant_type":"client_credentials",
+              "aud":["id:f90b1017e52f4c70ad92684e802c9249","ep:dev1"],
+              "scope":"turn-led-on",             
+              "cnf":"-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ...XwIDAQAB-----END PUBLIC KEY-----",
+            }
+      parameters:
+        - name: Authorization
+          in: header
+          description: >
+            Must be 'Bearer <Base64 encoded JWT string>'; the JWT must include either a User Id or an API key, used to set
+            the token's subject field.
+          
+          required: true
+          type: string
+        - name: Content-Type
+          in: header
+          description: Must be 'application/json;charset=UTF-8'
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/token-request'
+      responses:
+        '200':
+          description: signed CWT.
+          schema:
+            $ref: '#/definitions/token-response'
+        '400':
+          description: >-
+            Bad request; returns the standard error object detailing the error
+            message and optionally the invalid fields.
+          schema:
+            $ref: '#/definitions/error-response'
+        '401':
+          description: >-
+            Authentication failure. The provided header is invalid or missing;
+            returns the standard error object detailing the error message and
+            optionally the invalid fields.
+          schema:
+            $ref: '#/definitions/error-response'
+
+  /v3/trust-anchors:
+    post:
+      tags:
+        - TrustAnchor
+      description: >
+        Creates a "Trust Anchor" keypair and returns the Public Key and creation time.
+        Each account may have maximum 1 trust anchor. This API will fail if one already exists.
+
+        Authorized for roles: Service, ServiceAdministrator
+
+          Example:
+
+            {
+              "description": "TrustAnchor for Samsung Device"
+            }
+      parameters:
+        - name: Authorization
+          in: header
+          description: Must be 'Bearer <Base64 encoded JWT string>'
+          required: true
+          type: string
+        - name: Content-Type
+          in: header
+          description: Must be 'application/json;charset=UTF-8'
+          required: true
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/create-trust-anchor-request'
+      responses:
+        '201':
+          description: Trust Anchor Created.
+          schema:
+            $ref: '#/definitions/create-trust-anchor-response'
+        '400':
+          description: >-
+            Bad request; returns the standard error object detailing the error
+            message and optionally the invalid fields.
+          schema:
+            $ref: '#/definitions/error-response'
+        '401':
+          description: >-
+            Authentication failure. The provided header is invalid or missing;
+            returns the standard error object detailing the error message and
+            optionally the invalid fields.
+          schema:
+            $ref: '#/definitions/error-response'
+        '403':
+          description: >-
+            Account limit exceeded. There is already a Trust Anchor defined for the account;
+            returns the standard error object detailing the error message.
+          schema:
+            $ref: '#/definitions/error-response'
+
+    get:
+      tags:
+        - TrustAnchor
+      description: >
+        Get all the TrustAnchor's matching the account id specified in the JWT
+
+        Authorized for roles: Service, ServiceAdministrator
+        
+      parameters:
+        - name: Authorization
+          in: header
+          description: Must be 'Bearer <Base64 encoded JWT string>'
+          required: true
+          type: string
+      responses:
+        '200':
+          description: >-
+            Returns the list of Trust Anchors associated to the account_id specified in the JWT. 
+          schema:
+            $ref: '#/definitions/get-trust-anchors-response'
+        '400':
+          description: >-
+            Bad request; returns the standard error object detailing the error
+            message and optionally the invalid fields.
+          schema:
+            $ref: '#/definitions/error-response'
+        '401':
+          description: >-
+            Authentication failure. The provided header is invalid or missing;
+            returns the standard error object detailing the error message and
+            optionally the invalid fields.
+          schema:
+            $ref: '#/definitions/error-response'
+
+  '/v3/trust-anchors/{id}':
+    put:
+      tags:
+        - TrustAnchor
+      description: |
+        Updates a TrustAnchor description attribute
+
+        Authorized for roles: Service, ServiceAdministrator
+
+          Example:
+
+            {
+              "description": "TrustAnchor for Device: LG Flatron W2386L"
+            }
+      parameters:
+        - name: Authorization
+          in: header
+          description: Must be 'Bearer <Base64 encoded JWT string>'
+          required: true
+          type: string
+        - name: id
+          description: The id of the TrustAnchor
+          required: true
+          in: path
+          type: string
+          format: Muuid
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/update-trust-anchor-request'
+      responses:
+        '200':
+          description: Trust Anchor Updated.
+          schema:
+            $ref: '#/definitions/update-trust-anchor-response'
+        '400':
+          description: >-
+            Bad request; returns the standard error object detailing the error
+            message and optionally the invalid fields.
+          schema:
+            $ref: '#/definitions/error-response'
+        '401':
+          description: >-
+            Authentication failure. The provided header is invalid or missing;
+            returns the standard error object detailing the error message and
+            optionally the invalid fields.
+          schema:
+            $ref: '#/definitions/error-response'
+        '404':
+          description: The TrustAnchor to be updated was not found.
+
+    delete:
+      tags:
+        - TrustAnchor
+      description: >
+        Delete the specified Trust Anchor. Unrecoverable.
+        Authorized for roles: ServiceAdministrator
+      parameters:
+        - name: Authorization
+          in: header
+          description: Must be 'Bearer <Base64 encoded JWT string>'
+          required: true
+          type: string
+        - name: id
+          description: The id of the TrustAnchor
+          required: true
+          in: path
+          type: string
+          format: Muuid
+      responses:
+        '204':
+          description: Trust Anchor Deleted.
+        '400':
+          description: >-
+            Bad request; returns the standard error object detailing the error
+            message and optionally the invalid fields.
+          schema:
+            $ref: '#/definitions/error-response'
+        '401':
+          description: >-
+            Authentication failure. The provided header is invalid or missing;
+            returns the standard error object detailing the error message and
+            optionally the invalid fields.
+          schema:
+            $ref: '#/definitions/error-response'
+        '404':
+          description: The TrustAnchor to be deleted was not found.
+
+definitions:
+
+  key-value:
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+    required:
+      - key
+      - value
+
+  create-trust-anchor-request:
+    type: object
+    properties:
+      description:
+        description: >-
+          The description of the new Trust Anchor key-pair; length must be
+          between [1-256] characters
+        type: string
+        format: Free text
+    required:
+      - description
+
+  create-trust-anchor-response:
+    type: object
+    properties:
+      id:
+        description: Newly generated MUUID as string
+        type: string
+        format: Muuid
+      description:
+        description: Notes for the Key Pair TrustAnchor
+        type: string
+        format: Free text
+      public_key:
+        description: The generated Trust Anchor public key in PEM format
+        type: string
+        format: PEM Formatted Public Key
+      fingerprint:
+        description: The SHA256 of the trust anchor public key
+        type: string
+        format: The prefix 'mbed.ta.' followed by a base64 string of the SHA256 of the
+                trust anchor public key DER encoding
+      created_at:
+        description: Timestamp of the creation of the Trust Anchor
+        type: string
+        format:  RFC3339 UTC time
+      updated_at:
+        description: Timestamp of the last modification of the Trust Anchor.
+        type: string
+        format: RFC3339 UTC time
+      etag:
+        description: Timestamp of the last modification of the Trust Anchor
+        type: string
+        format: RFC3339 UTC time
+
+  update-trust-anchor-request:
+    type: object
+    properties:
+      description:
+        description: >-
+          The new description for the Trust Anchor; length must be between
+          [1-256] characters
+        type: string
+        format: Free text
+    required:
+      - description
+
+  update-trust-anchor-response:
+    type: object
+    properties:
+      id:
+        description: The Trust Anchor id.
+        type: string
+        format: Muuid
+      description:
+        description: The new description of the Trust Anchor
+        type: string
+        format: Free text
+      public_key:
+        description: The Trust Anchor public key in PEM format
+        type: string
+        format: PEM Formatted Public Key
+      fingerprint:
+        description: The SHA256 of the trust anchor public key
+        type: string
+        format: The prefix 'mbed.ta.' followed by a base64 string of the SHA256 of the
+                trust anchor public key DER encoding
+      created_at:
+        description: Timestamp of the creation of the Trust Anchor
+        type: string
+        format: RFC3339 UTC time
+      updated_at:
+        description: Timestamp of the last modification of the Trust Anchor.
+        type: string
+        format: RFC3339 UTC time
+      etag:
+        description: Timestamp of the last modification of the Trust Anchor
+        type: string
+        format: RFC3339 UTC time
+
+  get-trust-anchors-response:
+    type: object
+    properties:
+      object:
+        description: set to 'list'
+        type: string
+      limit:
+        description: "The number of results to return, (range: 2-1000), or equals to `total_count`"
+        type: integer
+        format: int32
+      after:
+        description: The entity ID to fetch after the given one.
+        type: string
+      order:
+        description: "The order of the records to return based on creation time. Available values: ASC, DESC; by default ASC."
+        enum : [ "ASC", "DESC" ]
+      total_count:
+        description: The total number or records, if requested. It might be returned also for small lists.
+        type: integer
+        format: int32
+      has_more:
+        type: boolean
+        description: Flag indicating whether there are more results.
+        default: false
+      data:
+        description: The list of Trust Anchors of the account
+        type: array
+        items:
+         $ref: '#/definitions/trust-anchor-response'
+
+  trust-anchor-response:
+    type: object
+    properties:
+      id:
+        description: The Trust Anchor id.
+        type: string
+        format: Muuid
+      description:
+        description: The description attribute of the Trust Anchor
+        type: string
+        format: Free text
+      public_key:
+        description: The Trust Anchor public key in PEM format
+        type: string
+        format: PEM Formatted Public Key
+      fingerprint:
+        description: The SHA256 of the trust anchor public key
+        type: string
+        format: The prefix 'mbed.ta.' followed by a base64 string of the SHA256 of the
+                trust anchor public key DER encoding
+      created_at:
+        description: Timestamp of the creation of the Trust Anchor.
+        type: string
+        format: RFC3339 UTC time
+      updated_at:
+        description: Timestamp of the last modification of the Trust Anchor.
+        type: string
+        format: RFC3339 UTC time
+      etag:
+        description: Timestamp of the last modification of the Trust Anchor
+        type: string
+        format: RFC3339 UTC time
+
+  token-request:
+    type: object
+    properties:
+      grant_type:
+        description: >-
+          Hard coded - can be only "client_credentials"
+        type: string
+      aud:
+        description: >-
+          array of \<type\>:\<identity\> tuples representing devices for which access is being  requested; there must be at least one id/ep tuple.<br/> \<type\> ::= [a-zA-Z][a-zA-Z0-9-]* <br/> \<identity\>::=[a-zA-Z0-9+/=- ]+ <br/>\<audience\> :== \<type\> ":" \<identity\>  <br/> \<idenitity\> can be 60 characters long max, and can contain spaces! Audience array can be 50 tuple long max. if even one item in the list will not be authorized by IAM - the whole request will not be authorized and access token will not return (access denied).
+        type: array
+        items: 
+          type: string
+        format: >-
+          ["id:muuid","ep:name","id:muuid","ep:name with spaces"]
+       
+      scope:
+        description: >-
+          the space delimited list of operations for which access is being
+          requested; there must be at least one scope-item, scope item can have 60 characters max, scope list can hold 20 scope elements max. <br/> \<scope\>::=[a-zA-Z][a-zA-Z0-9-]* <br/>
+          \<scope-list\>::= \<scope\> | \<scope\> " " | \<scope\> " " \<scope-list\> <br/>
+          The scope being requested should match the action the proxy will eventually do on the device. The device will eventually match the scope in the access token to the action requested in the operation bundle. 
+        type: string
+        format: 'scope-item scope-item ...'
+      cnf:
+        description: the proxy proof-of-possesion public key
+        type: string
+        format: PEM formatted public key
+    required:
+      - grant_type
+      - aud
+      - scope
+      - cnf
+
+  token-response:
+    type: object
+    properties:
+      granted_until:
+        description: Time when grant expires
+        type: string
+        format: RFC3339 UTC time
+      access_token:
+        description: The generated CWT
+        type: string
+        format: Base64
+
+  error-response:
+    type: object
+    properties:
+      object:
+        description: set to 'error'
+        type: string
+      code:
+        description: >-
+          the error code; one of 400, 401, 403, 404, 405, 409, 412, 429, 500,
+          503 in correspondence with property 'type'
+        type: integer
+      type:
+        description: >-
+          the error type; one of 'Something is wrong with the request',
+          'One/more parameters are invalid', 'Authentication failure. The
+          provided token is invalid', 'Authentication failure. The provided API
+          Key is invalid', 'Authorization failure. Though the caller is
+          authenticated but no authorization was granted to execute the
+          request', 'Account limit reached', 'Entity was not found', 'Specified
+          method is not supported', 'The request would create a duplicate
+          entity', 'Concurrency error. Trying to update not the latest entity
+          version', 'Account rate limit exceeded', 'Unexpected internal server
+          error', 'System is unavailable'.
+        type: string
+      message:
+        description: the error message
+        type: string
+      fields:
+        description: >-
+          array of [field-name,field-error] tuples in the form
+          "fields":[{"key":"field name","value":"error description"}]; if all
+          fields are valid but there is an inconsistency between two or more
+          fields in the request, the field name, is replaced with "Inconsistent
+          request fields"
+        type: array
+        items:
+          $ref: '#/definitions/key-value'
+      request_id:
+        description: request id from JWT in 'Authorization' header
+        type: string
