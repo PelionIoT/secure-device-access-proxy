@@ -1,0 +1,55 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+description = 'ACE AUTH Project'
+
+dependencies {
+    //Projects
+    compile project(':crypto-utils-spongy')
+    //Dependencies
+    compile ("com.upokecenter:cbor:${cborJavaVersion}")
+}
+
+test {
+    useTestNG()
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat "full"
+        showStandardStreams = true
+    }
+    systemProperty 'arm.build.dir', buildDir
+
+    // If a test fails, print its stdout/stderr to the console.
+    def testLog = new LinkedList<String>()
+    beforeTest { TestDescriptor testDescriptor ->
+        testLog.clear()
+    }
+    onOutput { TestDescriptor testDescriptor, TestOutputEvent testOutputEvent ->
+        testLog.addAll(testOutputEvent.getMessage().split('(?m)$'))
+    }
+    afterTest { TestDescriptor testDescriptor, TestResult testResult ->
+        if (testResult.resultType == TestResult.ResultType.FAILURE && testLog.size() > 0) {
+            def title = "${testDescriptor.className}.${testDescriptor.name} output:"
+            def header = 'v' * title.length()
+            def footer = '^' * title.length()
+
+            println()
+            println('\033[31m' + header + '\033[37m')
+            println(title)
+            testLog.each { print(it) }
+            println('\033[31m' + footer + '\033[37m')
+        }
+    }
+}
+
+configurations {
+    testArtifacts.extendsFrom testRuntime
+}
+task testJar(type: Jar) {
+    classifier "test"
+    from sourceSets.test.output
+}
+artifacts {
+    testArtifacts testJar
+}

@@ -31,8 +31,9 @@ paths:
     post:
       tags:
         - AccessToken
+      operationId: createAceAuthToken
       description: |
-        Generate a signed CWT. The SDA Proxy SDK uses this API to gain access to perform actions on the device(s) specified in the audience (aud). 
+        Generate a signed CWT. The SDA Proxy SDK uses this API to gain access to perform actions on the device(s) specified in the audience (aud).
 
         Authorized for roles: Service, ServiceAdministrator
 
@@ -41,7 +42,7 @@ paths:
             {
               "grant_type":"client_credentials",
               "aud":["id:f90b1017e52f4c70ad92684e802c9249","ep:dev1"],
-              "scope":"turn-led-on",             
+              "scope":"turn-led-on",
               "cnf":"-----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ...XwIDAQAB-----END PUBLIC KEY-----",
             }
       parameters:
@@ -50,7 +51,7 @@ paths:
           description: >
             Must be 'Bearer <Base64 encoded JWT string>'; the JWT must include either a User Id or an API key, used to set
             the token's subject field.
-          
+
           required: true
           type: string
         - name: Content-Type
@@ -86,6 +87,7 @@ paths:
     post:
       tags:
         - TrustAnchor
+      operationId: createTrustAnchor
       description: >
         Creates a "Trust Anchor" keypair and returns the Public Key and creation time.
         Each account may have maximum 1 trust anchor. This API will fail if one already exists.
@@ -141,11 +143,12 @@ paths:
     get:
       tags:
         - TrustAnchor
+      operationId: getTrustAnchors
       description: >
         Get all the TrustAnchor's matching the account id specified in the JWT
 
         Authorized for roles: Service, ServiceAdministrator
-        
+
       parameters:
         - name: Authorization
           in: header
@@ -155,7 +158,7 @@ paths:
       responses:
         '200':
           description: >-
-            Returns the list of Trust Anchors associated to the account_id specified in the JWT. 
+            Returns the list of Trust Anchors associated to the account_id specified in the JWT.
           schema:
             $ref: '#/definitions/get-trust-anchors-response'
         '400':
@@ -176,6 +179,7 @@ paths:
     put:
       tags:
         - TrustAnchor
+      operationId: updateTrustAnchor
       description: |
         Updates a TrustAnchor description attribute
 
@@ -227,6 +231,7 @@ paths:
     delete:
       tags:
         - TrustAnchor
+      operationId: deleteTrustAnchor
       description: >
         Delete the specified Trust Anchor. Unrecoverable.
         Authorized for roles: ServiceAdministrator
@@ -300,6 +305,10 @@ definitions:
         description: The generated Trust Anchor public key in PEM format
         type: string
         format: PEM Formatted Public Key
+      public_key_der:
+        description: The generated Trust Anchor public key in base64 encoded DER format
+        type: string
+        format: Base64 encoded DER Formatted Public Key
       fingerprint:
         description: The SHA256 of the trust anchor public key
         type: string
@@ -345,6 +354,10 @@ definitions:
         description: The Trust Anchor public key in PEM format
         type: string
         format: PEM Formatted Public Key
+      public_key_der:
+        description: The generated Trust Anchor public key in base64 encoded DER format
+        type: string
+        format: Base64 encoded DER Formatted Public Key
       fingerprint:
         description: The SHA256 of the trust anchor public key
         type: string
@@ -408,6 +421,10 @@ definitions:
         description: The Trust Anchor public key in PEM format
         type: string
         format: PEM Formatted Public Key
+      public_key_der:
+        description: The generated Trust Anchor public key in base64 encoded DER format
+        type: string
+        format: Base64 encoded DER Formatted Public Key
       fingerprint:
         description: The SHA256 of the trust anchor public key
         type: string
@@ -437,17 +454,17 @@ definitions:
         description: >-
           array of \<type\>:\<identity\> tuples representing devices for which access is being  requested; there must be at least one id/ep tuple.<br/> \<type\> ::= [a-zA-Z][a-zA-Z0-9-]* <br/> \<identity\>::=[a-zA-Z0-9+/=- ]+ <br/>\<audience\> :== \<type\> ":" \<identity\>  <br/> \<idenitity\> can be 60 characters long max, and can contain spaces! Audience array can be 50 tuple long max. if even one item in the list will not be authorized by IAM - the whole request will not be authorized and access token will not return (access denied).
         type: array
-        items: 
+        items:
           type: string
         format: >-
           ["id:muuid","ep:name","id:muuid","ep:name with spaces"]
-       
+
       scope:
         description: >-
           the space delimited list of operations for which access is being
           requested; there must be at least one scope-item, scope item can have 60 characters max, scope list can hold 20 scope elements max. <br/> \<scope\>::=[a-zA-Z][a-zA-Z0-9-]* <br/>
           \<scope-list\>::= \<scope\> | \<scope\> " " | \<scope\> " " \<scope-list\> <br/>
-          The scope being requested should match the action the proxy will eventually do on the device. The device will eventually match the scope in the access token to the action requested in the operation bundle. 
+          The scope being requested should match the action the proxy will eventually do on the device. The device will eventually match the scope in the access token to the action requested in the operation bundle.
         type: string
         format: 'scope-item scope-item ...'
       cnf:

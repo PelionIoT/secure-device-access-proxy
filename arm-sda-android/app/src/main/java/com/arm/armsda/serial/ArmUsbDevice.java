@@ -13,12 +13,18 @@
 // ----------------------------------------------------------------------------
 package com.arm.armsda.serial;
 
+import android.content.Context;
+import android.media.MediaScannerConnection;
+import android.os.Environment;
 import android.util.Log;
-
-import com.arm.mbed.dbauth.proxysdk.ProxyException;
-import com.arm.mbed.dbauth.proxysdk.devices.AbstractDevice;
+import com.arm.mbed.sda.proxysdk.ProxyException;
+import com.arm.mbed.sda.proxysdk.devices.AbstractDevice;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
-
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.MessageDigest;
@@ -27,11 +33,19 @@ import java.util.Arrays;
 
 public class ArmUsbDevice extends AbstractDevice implements ISerialDataSink {
 
-    private static final byte[] BOM = new byte[] {0x6d, 0x62, 0x65, 0x64, 0x64, 0x62, 0x61, 0x70};
     private static final int SHA256_LENGTH = 32;
-
     private SerialHandler serialHandler;
-    private IUsbDeviceLogger logger;
+    private File logFile;
+    private FileOutputStream outputStream;
+    private Context ctx;
+    private StringBuffer logStringBuffer = new StringBuffer("");
+    private final static String LINE_SEPARATOR = System.getProperty("line.separator");
+    private  byte[] workBuffer = new byte[SerialHandler.INPUT_BUFFER_LENGTH * 2];
+    private State state;
+    private byte[] msgBuffer;
+    private int mark;
+    private int expectedMsgLength;
+    private byte[] response;
 
     private enum State {
         BomSearch,
@@ -40,32 +54,22 @@ public class ArmUsbDevice extends AbstractDevice implements ISerialDataSink {
         DigestSearch;
     };
 
-    byte[] workBuffer = new byte[SerialHandler.INPUT_BUFFER_LENGTH * 2];
-    State state;
-    byte[] msgBuffer;
-    int mark;
-    int expectedMsgLength;
-    byte[] response;
-
-    public ArmUsbDevice(UsbSerialPort serialPort) {
-        this(serialPort, new IUsbDeviceLogger() {
-                            @Override
-                            public void log(byte[] logStream) {
-                            }
-            }
-        );
-    }
-
-    public ArmUsbDevice(UsbSerialPort serialPort, IUsbDeviceLogger logger) {
+    public ArmUsbDevice(UsbSerialPort serialPort, Context ctx) {
         this.serialHandler = new SerialHandler(serialPort);
-        this.logger = logger;
+        logStringBuffer.setLength(0);
+
+        this.ctx = ctx;
+        logFile = new File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "Mbed_log.txt");
+        logFile.delete();
     }
 
     @Override   // from AbstractDevice
     public byte[] sendMessage(byte[] operationMessage) {
 
         // Write message to usb
-        byte[] serialProtocolMessage = formatSerialProtocolMessage(operationMessage);
+        byte[] serialProtocolMessage = SerialMessage.formatSerialProtocolMessage(operationMessage);
         serialHandler.write(serialProtocolMessage);
 
         // Read response (Read message from usb)
@@ -74,6 +78,16 @@ public class ArmUsbDevice extends AbstractDevice implements ISerialDataSink {
         workBuffer = new byte[SerialHandler.INPUT_BUFFER_LENGTH * 2];
         mark = 0;
         expectedMsgLength = 0;
+
+        try {
+            Log.d("M_FILE", "Opening log file");
+            //Opening the log file (append mode), in case that the open file location/path is
+            //read-only FileNotFoundException will be thrown
+            outputStream = new FileOutputStream(logFile, true);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
         serialHandler.startRead(this);
         response = null;
 
@@ -88,12 +102,26 @@ public class ArmUsbDevice extends AbstractDevice implements ISerialDataSink {
                 throw new ProxyException("Failed to get response from device");
             }
         }
+
+        // initiate media scan and put the new things into the path array to
+        // make the scanner aware of the location and the files you want to see
+        MediaScannerConnection.scanFile(
+                ctx,
+                new String[] {logFile.toString()},
+                null,
+                null);
+
+        try {
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return response;
     }
 
     @Override   // from ISerialDataSink
     public void onNewData(byte[] data) {
-        System.out.println("ArmUsbDevice: onNewData");
 
         byte[] tmpBuffer = new byte[mark + data.length];
         System.arraycopy(workBuffer, 0, tmpBuffer, 0, mark);
@@ -140,22 +168,25 @@ public class ArmUsbDevice extends AbstractDevice implements ISerialDataSink {
                 sleeping();
                 return;
             }
-            //serialHandler.stopRead();
             byte[] msgDigest = Arrays.copyOfRange(tmpBuffer, 0, SHA256_LENGTH);
             if (null == msgBuffer) {
                 System.out.println("ArmUsbDevice: msgBuffer is null?");
             }
-            byte[] expectedDigest = getDigest(msgBuffer);
+            byte[] expectedDigest = SerialMessage.getDigest(msgBuffer);
             if (!Arrays.equals(msgDigest, expectedDigest)) {
-                System.out.println("msgDigest:" + Arrays.toString(msgDigest) + " Size: " + msgDigest.length );
-                System.out.println("expectedDigest:" + Arrays.toString(expectedDigest)  + " Size: " + expectedDigest.length );
-                System.out.println("tmpBuffer:" + Arrays.toString(tmpBuffer)  + " Size: " + tmpBuffer.length );
+                System.out.println("msgDigest:" + Arrays.toString(msgDigest) + " Size: " + msgDigest.length);
+                System.out.println("expectedDigest:" + Arrays.toString(expectedDigest) + " Size: " + expectedDigest.length);
+                System.out.println("tmpBuffer:" + Arrays.toString(tmpBuffer) + " Size: " + tmpBuffer.length);
                 throw new ProxyException("Device message has invalid digest");
             }
-            System.out.println("ArmUsbDevice: Returning Message!");
-            Log.i("", "ArmUsbDevice: Returning Message!");
+
+            printToLogAndStdout(tmpBuffer, true);
 
             serialHandler.stopRead();
+            state = State.BomSearch;
+
+            System.out.println("ArmUsbDevice: Returning Message!");
+            Log.i("", "ArmUsbDevice: Returning Message!");
 
             response = msgBuffer;
         }
@@ -164,10 +195,10 @@ public class ArmUsbDevice extends AbstractDevice implements ISerialDataSink {
     private boolean findBom(byte[] tmpBuffer) {
         boolean found = false;
         int i = 0;
-        for (i = 0; i <= tmpBuffer.length - BOM.length; i ++) {
+        for (; i <= tmpBuffer.length - SerialMessage.BOM.length; i ++) {
             found = true;
-            for (int j = 0; j < BOM.length; j ++) {
-                if (tmpBuffer[i + j] != BOM[j]) {
+            for (int j = 0; j < SerialMessage.BOM.length; j ++) {
+                if (tmpBuffer[i + j] != SerialMessage.BOM[j]) {
                     found = false;
                     break;
                 }
@@ -179,52 +210,17 @@ public class ArmUsbDevice extends AbstractDevice implements ISerialDataSink {
         }
         byte[] logBuffer = new byte[i];
         System.arraycopy(tmpBuffer, 0, logBuffer, 0, i);
-        logger.log(logBuffer);
+
+        printToLogAndStdout(logBuffer, false);
+
         if (!found) {
             mark = tmpBuffer.length - i;
             System.arraycopy(tmpBuffer, i, workBuffer, 0, mark);
         } else {
-            mark = tmpBuffer.length - (i+BOM.length);
-            System.arraycopy(tmpBuffer, i+BOM.length, workBuffer, 0, mark);
+            mark = tmpBuffer.length - (i + SerialMessage.BOM.length);
+            System.arraycopy(tmpBuffer, i + SerialMessage.BOM.length, workBuffer, 0, mark);
         }
         return found;
-    }
-
-    private byte[] formatSerialProtocolMessage(byte[] operationMsg) {
-
-        byte[] digest = getDigest(operationMsg);
-        byte[] msgSize = new byte[4];
-        msgSize = toBytes(operationMsg.length);
-
-        byte[] serialMsg = new byte[BOM.length + msgSize.length + operationMsg.length + digest.length];
-        System.arraycopy(BOM, 0, serialMsg, 0, BOM.length);
-        System.arraycopy(msgSize, 0, serialMsg, BOM.length, msgSize.length);
-        System.arraycopy(operationMsg, 0, serialMsg, BOM.length + msgSize.length, operationMsg.length);
-        System.arraycopy(digest, 0, serialMsg, BOM.length + msgSize.length + operationMsg.length, digest.length);
-        return serialMsg;
-    }
-
-    private byte[] getDigest(byte[] msg) {
-        MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("SHA-256");
-        } catch(NoSuchAlgorithmException ex) {
-            throw new ProxyException("Failed to get SHA256 message digest factory");
-        }
-        md.update(msg);
-        return md.digest();
-    }
-
-    private byte[] toBytes(int i)
-    {
-        byte[] result = new byte[4];
-
-        result[0] = (byte) (i >> 24);
-        result[1] = (byte) (i >> 16);
-        result[2] = (byte) (i >> 8);
-        result[3] = (byte) (i /*>> 0*/);
-
-        return result;
     }
 
     private void sleeping() {
@@ -234,4 +230,38 @@ public class ArmUsbDevice extends AbstractDevice implements ISerialDataSink {
             e.printStackTrace();
         }
     }
+
+    private void printToLogAndStdout(byte[] logBuffer, boolean lastCall) {
+
+        if (lastCall) {
+            Log.i("MBED_DEBUG", logStringBuffer.toString());
+            try {
+                outputStream.write(logStringBuffer.toString().getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+        String logStr = null;
+        try {
+            logStr = new String(logBuffer, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        logStringBuffer.append(logStr);
+        String[] lines = logStringBuffer.toString().split(LINE_SEPARATOR);
+        if (lines.length > 1) {
+            for (int index = 0; index < lines.length -1; index++) {
+                Log.i("MBED_DEBUG", lines[index]);
+                try {
+                    outputStream.write(lines[index].getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            logStringBuffer.setLength(0);
+            logStringBuffer.append(lines[lines.length-1]);
+        }
+    }
+
 }

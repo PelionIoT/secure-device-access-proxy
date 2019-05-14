@@ -21,14 +21,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
 import android.content.CursorLoader;
@@ -41,17 +37,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,15 +54,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.arm.armsda.R;
-import com.arm.armsda.data.AccessTokens;
 import com.arm.armsda.data.ApiGwLoginDetails;
+import com.arm.armsda.data.ApplicationData;
 import com.arm.armsda.data.IDataHandler;
 import com.arm.armsda.data.SharedPreferencesHandleData;
+import com.arm.armsda.serial.DeviceConnection;
+import com.arm.armsda.settings.ActionBarDrawerActivity;
 import com.arm.armsda.utils.AndroidUtils;
-import com.arm.mbed.dbauth.proxysdk.SecuredDeviceAccess;
-import com.arm.mbed.dbauth.proxysdk.http.HttpErrorResponseException;
-import com.arm.mbed.dbauth.proxysdk.server.IAuthServer;
-import com.arm.mbed.dbauth.proxysdk.server.UserPasswordServer;
+import com.arm.mbed.sda.proxysdk.ProxyException;
+import com.arm.mbed.sda.proxysdk.SecuredDeviceAccess;
+import com.arm.mbed.sda.proxysdk.http.HttpErrorResponseException;
+import com.arm.mbed.sda.proxysdk.server.UserPasswordServer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
@@ -77,7 +74,7 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends ActionBarDrawerActivity implements LoaderCallbacks<Cursor> {
 
     //TODO:: FIX - when attempting to login without network connected.
 
@@ -113,12 +110,20 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private static UserPasswordServer authServer;
     private ApiGwLoginDetails apiGwLoginDetails;
 
+    private DeviceConnection dv = new DeviceConnection();
+    private static final String appDataSharedPreferencesKeyValue = "appDataDetails";
+    private ApplicationData applicationData;
+    private static final String DEFAULT_DEMO_MODE = ApplicationData.HANNOVER_MESSE;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        baseUrl = getString(R.string.env_url);
-        accountId = getString(R.string.account_id);
+
+        //Setting Drawer
+        LayoutInflater inflater = (LayoutInflater) this
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View contentView = inflater.inflate(R.layout.activity_login, null, false);
+        mDrawerLayout.addView(contentView, 0);
 
         getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -137,8 +142,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 return false;
             }
         });
-
-        drawerInitOnCreate();
 
         /* Set Permissions */
         verifyStoragePermissions(this);
@@ -161,30 +164,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mProgressView = findViewById(R.id.login_progress);
     }
 
-    private void drawerInitOnCreate() {
-
-//                        AccessTokens accessTokens = new AccessTokens();
-//
-//                        dataHandler.saveJsonStringData(
-//                                "AccessTokens",
-//                                accessTokens.toJsonObject(),
-//                                LoginActivity.this);
-//
-//                        apiGwLoginDetails.clean();
-//
-//                        //If details changed before pressing the Go button - save the changes
-//                        dataHandler.saveJsonStringData(
-//                                sharedPreferencesKeyValue,
-//                                apiGwLoginDetails.toJsonObject(),
-//                                LoginActivity.this);
-//
-//                        i = new Intent(LoginActivity.this, LoginActivity.class);
-//                        startActivity(i);
-
-
+    @Override
+    protected void onResume() {
+        dv.registerDevice(this);
+        initializeAppConfiguration();
+        super.onResume();
     }
 
-
+    @Override
+    protected void onStop() {
+        dv.unregisterDevice(this);
+        super.onStop();
+    }
 
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
@@ -192,6 +183,45 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
 
         getLoaderManager().initLoader(0, null, this);
+    }
+
+    private void initializeAppConfiguration() {
+
+        JSONObject jsonStored =  dataHandler.getJsonStringData(
+                appDataSharedPreferencesKeyValue,
+                LoginActivity.this);
+
+        if (null != jsonStored) {
+            applicationData = new ApplicationData(jsonStored);
+            String demo_mode = ((applicationData.getDemoMode() != null) ?
+                    applicationData.getDemoMode() : DEFAULT_DEMO_MODE);
+            baseUrl = ((applicationData.getCloudUrl() != null) ?
+                    applicationData.getCloudUrl() : getString(R.string.env_url));
+            accountId = ((applicationData.getAccountId() != null) ?
+                    applicationData.getAccountId() : getString(R.string.account_id));
+
+            //For safety we save the configuration again. Demo wont be empty in the next activity
+            applicationData = new ApplicationData(
+                    demo_mode,
+                    accountId,
+                    baseUrl);
+
+            dataHandler.saveJsonStringData(
+                    appDataSharedPreferencesKeyValue,
+                    applicationData.toJsonObject(),
+                    LoginActivity.this);
+
+        } else {
+            applicationData = new ApplicationData(
+                    DEFAULT_DEMO_MODE,
+                    getString(R.string.account_id),
+                    getString(R.string.env_url));
+
+            dataHandler.saveJsonStringData(
+                    appDataSharedPreferencesKeyValue,
+                    applicationData.toJsonObject(),
+                    LoginActivity.this);
+        }
     }
 
     private boolean mayRequestContacts() {
@@ -408,7 +438,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 return false;
             }
 
-            //TODO:: Ofert account id from hamburger menu
             apiGwLoginDetails = new ApiGwLoginDetails(
                     mEmailUsernameView.getText().toString(),
                     mPasswordView.getText().toString(),
@@ -431,6 +460,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 authServer.acquireJwt();
             } catch (HttpErrorResponseException e) {
                 httpError = "Error: " + e.getHttpErrorStatusCode() + "\nMessage: " + e.getHttpErrorMessage();
+                return false;
+            } catch (ProxyException e) {
+                httpError = "Error: Please check your Internet connection or URL configuration";
+                Log.d("LoginActivity", "exception: " + e.getMessage());
                 return false;
             }
 
@@ -487,8 +520,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             if (!apiGwLoginDetails.isEmpty()) {
                 mEmailUsernameView.setText(apiGwLoginDetails.getUseranme());
                 mPasswordView.setText(apiGwLoginDetails.getPassword());
-                //OFERT - fix this, do not present it
-                //accountIdEditText.setText(apiGwLoginDetails.getAccountId());
             }
         }
     }

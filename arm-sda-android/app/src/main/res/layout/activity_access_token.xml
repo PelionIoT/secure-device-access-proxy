@@ -28,7 +28,7 @@
         android:layout_marginStart="114dp"
         android:layout_marginTop="117dp"
         android:textSize="22sp"
-        android:text="Read Data" />
+        android:text="@string/read_data_button" />
 
     <CheckBox
         android:id="@+id/ConfigureCheckBox"
@@ -38,7 +38,7 @@
         android:layout_below="@+id/ReadDataCheckBox"
         android:layout_marginTop="35dp"
         android:textSize="22sp"
-        android:text="Configure" />
+        android:text="@string/configure_button" />
 
     <CheckBox
         android:id="@+id/UpdateCheckBox"
@@ -48,7 +48,7 @@
         android:layout_below="@+id/ConfigureCheckBox"
         android:layout_marginTop="37dp"
         android:textSize="22sp"
-        android:text="Update" />
+        android:text="@string/update_button" />
 
     <Button
 

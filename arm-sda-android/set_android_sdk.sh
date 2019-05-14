@@ -8,6 +8,6 @@ unzip sdk-tools-linux-3859397.zip
 #Accept to all licenses
 yes | tools/bin/sdkmanager --licenses
 
-#Note: you need to export ANDROID_HOME with the arm-sda-android location, 
-#the sdk extracted to this location and android build need it.
+#Note: you need to export ANDROID_HOME with the arm-sda-android location,
+#the sdk extracted to this location and Android build need it.
 #We export ANDROID_HOME in Jenkins JOB

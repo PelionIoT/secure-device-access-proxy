@@ -1,27 +1,19 @@
-<!--                                                                         -->
-<!-- The confidential and proprietary information contained in this file may -->
-<!-- only be used by a person authorized under and to the extent permitted   -->
-<!-- by a subsisting licensing agreement from ARM Limited or its affiliates. -->
-<!--                                                                         -->
-<!--         (C)COPYRIGHT 2018 ARM Limited or its affiliates.                -->
-<!--             ALL RIGHTS RESERVED                                         -->
-<!--                                                                         -->
-<!-- This entire notice must be reproduced on all copies of this file        -->
-<!-- and copies of this file may only be made by a person if such person is  -->
-<!-- permitted to do so under the terms of a subsisting license agreement    -->
-<!-- from ARM Limited or its affiliates.                                     -->
-<!--                                                                         -->
+<!--                                                                         --><!-- The confidential and proprietary information contained in this file may --><!-- only be used by a person authorized under and to the extent permitted   --><!-- by a subsisting licensing agreement from ARM Limited or its affiliates. --><!--                                                                         --><!--         (C)COPYRIGHT 2018 ARM Limited or its affiliates.                --><!--             ALL RIGHTS RESERVED                                         --><!--                                                                         --><!-- This entire notice must be reproduced on all copies of this file        --><!-- and copies of this file may only be made by a person if such person is  --><!-- permitted to do so under the terms of a subsisting license agreement    --><!-- from ARM Limited or its affiliates.                                     --><!--                                                                         -->
 <resources>
     <string name="app_name">SDA</string>
 
 
     <!-- GUI -->
+    <!-- Login Activity -->
+    <string name="title_activity_login">Account Login</string>
     <string name="generate_access_token">Generate Access Token</string>
     <string name="send_message">Send Message</string>
     <string name="send_message_usb">Send Message USB</string>
+    <string name="ok_button">OK</string>
     <string name="exit">Exit</string>
-    <string name="version_number_label">Version Number:</string>
 
+    <!-- Access Token Activity -->
+    <string name="title_activity_access_token">Request Permissions</string>
     <string name="socket_timeout">Socket TIMEOUT</string>
     <string name="username_label">Username:</string>
     <string name="password_label">Password:</string>
@@ -32,13 +24,19 @@
     <string name="access_token_label">Access Token:</string>
     <string name="na">N/A</string>
 
-    <string name="device_ip_label">Device IP:</string>
-    <string name="device_port_label">Device Port:</string>
-    <string name="response_status_label">Response Status:</string>
-    <string name="response_type_label">Response Type:</string>
-
+    <!-- USB Serial Activity -->
+    <string name="title_activity_usb_serial">Perform Operation</string>
     <string name="load_usb_devices">Load USB Devices</string>
-    <string name="title_activity_login">Login to API GW</string>
+
+    <!-- User Settings -->
+    <string name="settings_cloud_url">Cloud URL:</string>
+    <string name="settings_account_id">Account ID:</string>
+    <string name="settings_saved">Settings Saved Successfully</string>
+
+    <!-- Demo Settings -->
+    <string name="settings_set_demo">Demo Activated</string>
+
+    <!-- GUI END -->
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email or Username</string>
@@ -53,7 +51,40 @@
         completions."
     </string>
 
+    <!-- Strings related to USB serial Scrollbar -->
+    <string name="before_connect_device">Please Make Sure the Device is Connected</string>
+    <string name="device_connected">Mbed Device Connected</string>
+    <string name="device_disconnected">Mbed Device Disconnected</string>
+    <string name="read_data_to_device">Sending Read-Data Message to Serial Device</string>
+    <string name="configure_to_device">Sending Configure Message to Serial Device</string>
+    <string name="update_to_device">Sending Update Message to Serial Device</string>
+    <string name="restart_to_device">Sending Restart Message to Serial Device</string>
+    <string name="diagnostics_to_device">Sending Diagnostics Message to Serial Device</string>
+    <string name="access_granted">Access Granted</string>
+    <string name="access_denied">Access Denied</string>
+    <string name="op_result">Result:</string>
+    <string name="op_access_denied_popup">Access Denied</string>
+    <string name="op_ended_successfully_popup">Action Ended Successfully</string>
+    <string name="op_device_not_connected_popup">Device Is Not Connected</string>
+    <string name="connect_button_txt">Connect Mbed Device</string>
+    <string name="disconnect_button_txt">Disconnect Mbed Device</string>
+
+    <string name="read_data_button">Read Data</string>
+    <string name="configure_button">Configure</string>
+    <string name="update_button">Update</string>
+    <string name="restart_button">Restart</string>
+    <string name="diagnostics_button">Diagnostics</string>
+
+
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
 
+    <!-- DEV Activity -->
+    <string name="device_ip_label">Device IP:</string>
+    <string name="device_port_label">Device Port:</string>
+    <string name="response_status_label">Response Status:</string>
+    <string name="response_type_label">Response Type:</string>
+
+    <string name="copyright">Copyright Arm 2018</string>
+    <string name="base_version">Version:</string>
 </resources>

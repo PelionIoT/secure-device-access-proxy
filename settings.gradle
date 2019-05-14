@@ -15,3 +15,7 @@ include 'proxy'
 project(':proxy').projectDir = new File('proxy')
 include 'proxy-dev'
 project(':proxy-dev').projectDir = new File('proxy-dev')
+include 'ace-auth'
+project(':ace-auth').projectDir = new File('ace-auth')
+include 'crypto-utils-spongy'
+project(':crypto-utils-spongy').projectDir = new File('crypto-utils-spongy')

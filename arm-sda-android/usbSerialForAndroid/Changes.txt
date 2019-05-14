@@ -1,0 +1,14 @@
+usbSerialForAndroid Source code copied from: https://github.com/kai-morich/usb-serial-for-android
+
+This library is being used to allow our Android demo application to communicate with an Mbed device using serial over USB.
+
+The changes to the source code are:
+
+File: Gradle.build:
+* minSdkVersion changed to 19
+* targetSdkVersion changed to 26
+* buildToolsVersion changed to 26.0.2
+* compileSdkVersion changed to 26
+
+File: CdcAcmSerialDriver.java
+* mEnableAsyncReads = false; - Async reads are always off.

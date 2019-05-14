@@ -1,0 +1,30 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+description = 'crypto-utils'
+
+dependencies {    
+    //Dependencies
+    compile ("org.slf4j:slf4j-api:${slf4jVersion}")
+    compile ("ch.qos.logback:logback-classic:${logbackClassicVersion}")
+    compile ("com.madgag.spongycastle:pkix:${spongycastlePkixVersion}")
+}
+
+test {
+  useTestNG()
+
+  // show standard out and standard error of the test JVM(s) on the console
+  testLogging.showStandardStreams = true
+
+  // set heap size for the test JVM(s)
+  minHeapSize = "128m"
+  maxHeapSize = "512m"
+
+  // Limits the Static memory.  For unlimited, Remove this param.
+  jvmArgs '-XX:MaxMetaspaceSize=512m'
+
+  // listen to events in the test execution lifecycle
+  beforeTest { descriptor ->
+     logger.lifecycle("Running test: " + descriptor)
+  }
+}

@@ -13,7 +13,6 @@
 // ----------------------------------------------------------------------------
 apply plugin: 'java'
 apply plugin: 'eclipse'
-apply plugin: 'jacoco'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 description = 'Proxy'
@@ -24,14 +23,13 @@ configurations {
 }
 
 dependencies {
+    // Projects
+    compile project(':ace-auth')
 
     //Libs
-    //runtime ("org.postgresql:postgresql:${postgresDriverVersion}")
-    //compile ("org.flywaydb:flyway-core:${flywayVersion}")
 
     //Dependencies
     compile ("org.apache.commons:commons-lang3:${apacheCommonsVersion}")
-    //TODO:: FIX ME - version number is 54 check if we can move to 1.58 - OFERT
     compile ("com.madgag.spongycastle:pkix:${spongycastlePkixVersion}")
     compile ("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
     compile ("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
@@ -47,14 +45,12 @@ ext.scmMbedRevision = properties.containsKey('scmMbedRevision') ? scmMbedRevisio
 ext.scmMbedBranch   = properties.containsKey('scmMbedBranch') ? scmMbedBranch : 'UNKNOWN'
 
 def String my_env = System.env.'oauth_build_env'
-def isJacocoEnabled= ('jenkins'.equalsIgnoreCase(my_env))
 
-println '[Jacoco]  Runtime Environment ...: ' + my_env
-println '[Jacoco]  Is Enabled ............: ' + isJacocoEnabled
+
 
 jar {
     manifest {                    
-        attributes 'Main-Class': 'com.arm.mbed.dbauth.demo.ProxyMainApplication'
+        attributes 'Main-Class': 'com.arm.mbed.sda.demo.ProxyMainApplication'
         attributes (
                [
                 'Info-Build-Number': buildNumber,
@@ -70,53 +66,5 @@ jar {
 
 assemble.dependsOn shadowJar
 
-test {
-  useTestNG()
-
-  // show standard out and standard error of the test JVM(s) on the console
-  testLogging.showStandardStreams = true
-
-  // set heap size for the test JVM(s)
-  minHeapSize = "128m"
-  maxHeapSize = "512m"
-
-  // Limits the Static memory.  For unlimited, Remove this param.
-  jvmArgs '-XX:MaxMetaspaceSize=512m'
-
-  // listen to events in the test execution lifecycle
-  beforeTest { descriptor ->
-     logger.lifecycle("Running test: " + descriptor)
-  }
-
-  jacoco {
-      enabled=isJacocoEnabled
-      includes ['**/*.class']
-  }
-}
-
-jacoco {
-    toolVersion = "0.7.9"
-}
 
 def coverageSourceDirs = ['src/main/java']
-
-jacocoTestReport {
-
-    enabled=isJacocoEnabled
-
-    classDirectories = fileTree( dir: 'build/classes' )
-    additionalSourceDirs = files(coverageSourceDirs)
-    sourceDirectories = files(coverageSourceDirs)
-
-    test {
-        jacoco {
-        }
-    }
-
-    reports {
-        xml.enabled = isJacocoEnabled
-        html.enabled = isJacocoEnabled
-    }
-}
-
-check.dependsOn jacocoTestReport

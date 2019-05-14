@@ -58,9 +58,9 @@ public class SerialHandler {
                     if (numBytesRead > 0) {
                         byte[] tmp = Arrays.copyOf(buffer, numBytesRead);
                         String str = new String(tmp, "UTF-8");
-                        Log.d( TAG,"####### READ: mLoop:" + str);
+                        //Log.d( TAG,"####### READ: mLoop:" + str);
                         serialDataSink.onNewData(tmp);
-                    } else if (numBytesRead == 0 && startRead == false) {
+                    } else if (numBytesRead == 0 && !startRead) {
                         Log.d( TAG,"## Stop Reading from Device");
                         return;
                     }

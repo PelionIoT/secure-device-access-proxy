@@ -11,13 +11,8 @@ repositories {
 }
 
 dependencyManagement {
-	imports {
-		//mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
-		//bom with testng
+	imports {	
 		mavenBom("io.spring.platform:platform-bom:${platformBomVersion}")
 	}
 }
 
-dependencies {
-	testCompile 'org.testng:testng'
-}

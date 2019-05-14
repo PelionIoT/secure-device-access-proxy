@@ -1,17 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--                                                                         -->
-<!-- The confidential and proprietary information contained in this file may -->
-<!-- only be used by a person authorized under and to the extent permitted   -->
-<!-- by a subsisting licensing agreement from ARM Limited or its affiliates. -->
-<!--                                                                         -->
-<!--         (C)COPYRIGHT 2018 ARM Limited or its affiliates.                -->
-<!--             ALL RIGHTS RESERVED                                         -->
-<!--                                                                         -->
-<!-- This entire notice must be reproduced on all copies of this file        -->
-<!-- and copies of this file may only be made by a person if such person is  -->
-<!-- permitted to do so under the terms of a subsisting license agreement    -->
-<!-- from ARM Limited or its affiliates.                                     -->
-<!--                                                                         -->
+<?xml version="1.0" encoding="utf-8"?><!--  --><!-- The confidential and proprietary information contained in this file may --><!-- only be used by a person authorized under and to the extent permitted --><!-- by a subsisting licensing agreement from ARM Limited or its affiliates. --><!--  --><!-- (C)COPYRIGHT 2018 ARM Limited or its affiliates. --><!-- ALL RIGHTS RESERVED --><!--  --><!-- This entire notice must be reproduced on all copies of this file --><!-- and copies of this file may only be made by a person if such person is --><!-- permitted to do so under the terms of a subsisting license agreement --><!-- from ARM Limited or its affiliates. --><!--  -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.arm.armsda">
 
@@ -39,19 +26,24 @@
             android:windowSoftInputMode="stateHidden">
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/device_filter" />
         </activity>
-        <activity android:name=".activities.AccessTokenActivity" android:label="Get Permissions - Access Token"/>
-        <activity android:name=".activities.SendMessageUsbActivity" android:label="Send Message to serial device"/>
-        <activity android:name=".activities.SettingsActivity" android:label="Settings"/>
+        <activity
+            android:name=".activities.AccessTokenActivity"
+            android:label="@string/title_activity_access_token" />
+        <activity
+            android:name=".activities.SendMessageUsbActivity"
+            android:label="@string/title_activity_usb_serial" />
+        <activity android:name=".settings.ActionBarDrawerActivity" />
+        <activity android:name=".activities.BaseActivity" />
+        <activity
+            android:name=".settings.DemoProfileActivity"
+            android:label="Choose Demo Profile:"/>
+        <activity
+            android:name=".settings.UserSettingsActivity"
+            android:label="User Settings:"/>
     </application>
 
 </manifest>

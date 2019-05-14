@@ -19,5 +19,7 @@ public class CommandConstants {
     public final static String READ_DATA = "read-data";
     public final static String CONFIGURE = "configure";
     public final static String UPDATE = "update";
+    public final static String RESTART = "restart";
+    public final static String DIAGNOSTICS = "diagnostics";
 
 }

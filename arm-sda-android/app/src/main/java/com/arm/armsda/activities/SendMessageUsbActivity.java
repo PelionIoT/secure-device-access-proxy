@@ -15,19 +15,12 @@ package com.arm.armsda.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbManager;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
@@ -42,98 +35,43 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
 import com.arm.armsda.R;
 import com.arm.armsda.data.AccessTokens;
+import com.arm.armsda.data.ApplicationData;
 import com.arm.armsda.data.IDataHandler;
 import com.arm.armsda.data.LedConfiguration;
 import com.arm.armsda.data.SerialDeviceCmd;
 import com.arm.armsda.data.SharedPreferencesHandleData;
-import com.arm.armsda.serial.ArmUsbDevice;
-import com.arm.armsda.utils.AndroidUtils;
+import com.arm.armsda.serial.DeviceConnection;
 import com.arm.armsda.data.CommandConstants;
-import com.arm.mbed.dbauth.proxysdk.IDevice;
-import com.arm.mbed.dbauth.proxysdk.SecuredDeviceAccess;
-import com.arm.mbed.dbauth.proxysdk.operation.OperationArgumentType;
-import com.arm.mbed.dbauth.proxysdk.operation.ParamElement;
-import com.arm.mbed.dbauth.proxysdk.protocol.OperationResponse;
-import com.hoho.android.usbserial.driver.UsbSerialDriver;
-import com.hoho.android.usbserial.driver.UsbSerialPort;
-import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.arm.armsda.settings.ActionBarDrawerActivity;
+import com.arm.mbed.sda.proxysdk.IDevice;
+import com.arm.mbed.sda.proxysdk.SecuredDeviceAccess;
+import com.arm.mbed.sda.proxysdk.operation.OperationArgumentType;
+import com.arm.mbed.sda.proxysdk.operation.ParamElement;
+import com.arm.mbed.sda.proxysdk.protocol.OperationResponse;
 
 import org.json.simple.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
 
-//TODO:: many open issues
-// 1) fix device button indication "Disconnect device"
-// 2) fix when pressing the connect button and no device connected
-// 3) scroll view add
-
-public class SendMessageUsbActivity extends AppCompatActivity {
+public class SendMessageUsbActivity extends ActionBarDrawerActivity {
 
     private static String TAG = "SendMessageUsbActivity";
-    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
-
-    private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
-
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-
-            if (ACTION_USB_PERMISSION.equals(action)) {
-                synchronized (this) {
-                    if ((mUsbDevice.getVendorId() == 3368) && (mUsbDevice.getProductId() == 516)) {
-                        UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-
-                        if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                            if (device != null) {
-                                connectToDevice();
-                            }
-                        } else {
-                            AndroidUtils.customToast(
-                                    SendMessageUsbActivity.this,
-                                    "Device Pearmission denied",
-                                    Color.RED
-                            );
-                        }
-                    }
-                }
-            }
-
-            if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
-                // Device removed
-                synchronized (this) {
-                    cleanDeviceConnection();
-                    printToScrollbar("Serial device DISCONNECTED!");
-                }
-            }
-//            if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-//                // Device attached
-//                synchronized (this) {
-//                    // Qualify the new device to suit your needs and request permission
-//                    if ((mUsbDevice.getVendorId() == 1111) && (mUsbDevice.getProductId() == 222)) {
-//                        mUsbManager.requestPermission(mUsbDevice, mPermissionIntent);
-//                    }
-//                }
-//            }
-
-
-        }
-    };
 
     //Views
-    private Button mConnectSerialDeviceButton;
-    private Button mReadDataButton;
-    private Button mConfigureButton;
-    private Button mUpdateButton;
     private static ImageView mSerialConnectIndecationImageView;
     private ScrollView mResultScrollView;
     private TextView mResultScrollViewTextView;
+    private Button mFirstActionButton;
+    private Button mSecondActionButton;
+    private Button mThirdActionButton;
 
     //Shared Ref
     private static IDataHandler dataHandler = new SharedPreferencesHandleData();
@@ -142,16 +80,13 @@ public class SendMessageUsbActivity extends AppCompatActivity {
     private final static String accessTokenKeyNameInMap = "AccessToken";
     private LedConfiguration ledConfiguration = new LedConfiguration();
     private static final String sharedPreferencesKeyValueLed = "ledDetails";
+    private String demoProfile;
+    private static final String appDataSharedPreferencesKeyValue = "appDataDetails";
+    private ApplicationData applicationData;
 
     //Device
     private IDevice device;
-    private static boolean permissionGranted = false;
-    private PendingIntent mPermissionIntent = null;
-    private UsbManager mUsbManager = null;
-    private UsbDevice mUsbDevice;
-    private UsbDeviceConnection mConnection;
-    private UsbSerialPort mSerialPort;
-    private boolean isDeviceConnected = false;
+    private DeviceConnection dv = new DeviceConnection();
 
     //a little bit ugly
     private Activity activity;
@@ -159,13 +94,17 @@ public class SendMessageUsbActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_send_message_usb);
 
-        mConnectSerialDeviceButton = findViewById(R.id.ConnectSerialDeviceButton);
-        mSerialConnectIndecationImageView = findViewById(R.id.SerialConnectIndecationImageView);
-        mReadDataButton = findViewById(R.id.ReadDataButton);
-        mConfigureButton = findViewById(R.id.ConfigureButton);
-        mUpdateButton = findViewById(R.id.UpdateButton);
+        //Setting Drawer
+        LayoutInflater inflater = (LayoutInflater) this
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View contentView = inflater.inflate(R.layout.activity_send_message_usb, null, false);
+        mDrawerLayout.addView(contentView, 0);
+
+        mSerialConnectIndecationImageView = findViewById(R.id.SerialConnectIndicationImageView);
+        mFirstActionButton = findViewById(R.id.ReadDataButton);
+        mSecondActionButton = findViewById(R.id.ConfigureButton);
+        mThirdActionButton = findViewById(R.id.UpdateButton);
         mResultScrollView = findViewById(R.id.ResultScrollView);
         mResultScrollViewTextView = findViewById(R.id.ResultScrollViewTextView);
 
@@ -179,86 +118,163 @@ public class SendMessageUsbActivity extends AppCompatActivity {
                 SendMessageUsbActivity.this);
         accessTokens.setAccessTokensMap(jsonStored);
 
-        mConnectSerialDeviceButton.setOnClickListener(new View.OnClickListener() {
+        mFirstActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                //registerReceiver(mUsbReceiver, filter);
-                //Call to get access token Async thread
-                //new AccessTokenActivity.httpCallAccessToken().execute();
-
-                if (isDeviceConnected) {
-                    cleanDeviceConnection();
-                } else {
-                    checkPermissionAndConnectDevice();
-                }
-
-                Log.d("","");
-            }
-        });
-
-
-        mReadDataButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (!isDeviceConnected) {
-                    printToScrollbar("Please connect Serial device");
-                    onButtonShowPopupWindowClick(Color.CYAN,"Device is not connected.");
+                if (!DeviceConnection.isDeviceConnected) {
+                    printToScrollbar(getString(R.string.before_connect_device));
+                    onButtonShowPopupWindowClick(
+                            Color.parseColor("#4527A0"),
+                            getString(R.string.op_device_not_connected_popup));
                     return;
                 }
 
-                ParamElement[] cmdParams = new ParamElement[] {};
-                SerialDeviceCmd serialDeviceCmd = new SerialDeviceCmd(
-                        CommandConstants.READ_DATA,
-                        cmdParams);
+                device = DeviceConnection.device;
+                SerialDeviceCmd serialDeviceCmd;
 
-                printToScrollbar("Sending Read data message to Serial device");
+                if (demoProfile.equals(ApplicationData.HANNOVER_MESSE)) {
+                    ParamElement[] cmdParams = new ParamElement[] {};
+                    serialDeviceCmd = new SerialDeviceCmd(
+                            CommandConstants.RESTART,
+                            cmdParams);
+
+                    printToScrollbar(getString(R.string.restart_to_device));
+                } else {
+                    ParamElement[] cmdParams = new ParamElement[] {};
+                    serialDeviceCmd = new SerialDeviceCmd(
+                            CommandConstants.READ_DATA,
+                            cmdParams);
+
+                    printToScrollbar(getString(R.string.read_data_to_device));
+                }
+
                 new SendMessageUsbActivity.sendMessageToUsbSerialDevice().execute(serialDeviceCmd);
             }
         });
 
-        mConfigureButton.setOnClickListener(new View.OnClickListener() {
+        mSecondActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if (!isDeviceConnected) {
-                    printToScrollbar("Please connect Serial device");
-                    onButtonShowPopupWindowClick(Color.CYAN,"Device is not connected.");
+                if (!DeviceConnection.isDeviceConnected) {
+                    printToScrollbar(getString(R.string.before_connect_device));
+                    onButtonShowPopupWindowClick(
+                            Color.parseColor("#4527A0"),
+                            getString(R.string.op_device_not_connected_popup));
                     return;
                 }
 
-                degreePickerDialog(activity);
+                device = DeviceConnection.device;
+                if (demoProfile.equals(ApplicationData.HANNOVER_MESSE)) {
+                    SerialDeviceCmd serialDeviceCmd;
+                    ParamElement[] cmdParams = new ParamElement[] {};
+                    serialDeviceCmd = new SerialDeviceCmd(
+                            CommandConstants.DIAGNOSTICS,
+                            cmdParams);
+
+                    printToScrollbar(getString(R.string.diagnostics_to_device));
+                    new SendMessageUsbActivity.sendMessageToUsbSerialDevice().execute(serialDeviceCmd);
+                } else {
+                    degreePickerDialog(activity);
+                }
             }
         });
 
-        mUpdateButton.setOnClickListener(new View.OnClickListener() {
+        mThirdActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //Call to sent message Async thread
 
-                if (!isDeviceConnected) {
-                    printToScrollbar("Please connect Serial device");
-                    onButtonShowPopupWindowClick(Color.CYAN,"Device is not connected.");
+                if (!DeviceConnection.isDeviceConnected) {
+                    printToScrollbar(getString(R.string.before_connect_device));
+                    onButtonShowPopupWindowClick(
+                            Color.parseColor("#4527A0"),
+                            getString(R.string.op_device_not_connected_popup));
                     return;
                 }
 
-                ParamElement[] cmdParams = new ParamElement[] {};
-                SerialDeviceCmd serialDeviceCmd = new SerialDeviceCmd(
-                        CommandConstants.UPDATE,
-                        cmdParams);
+                device = DeviceConnection.device;
+                SerialDeviceCmd serialDeviceCmd;
 
-                printToScrollbar("Sending UPDATE message to Serial device");
+                if (demoProfile.equals(ApplicationData.HANNOVER_MESSE)) {
+                    ParamElement[] cmdParams = new ParamElement[] {};
+                    serialDeviceCmd = new SerialDeviceCmd(
+                            CommandConstants.UPDATE,
+                            cmdParams);
+
+                    printToScrollbar(getString(R.string.update_to_device));
+                } else {
+                    ParamElement[] cmdParams = new ParamElement[] {};
+                    serialDeviceCmd = new SerialDeviceCmd(
+                            CommandConstants.UPDATE,
+                            cmdParams);
+
+                    printToScrollbar(getString(R.string.update_to_device));
+                }
+
                 new SendMessageUsbActivity.sendMessageToUsbSerialDevice().execute(serialDeviceCmd);
             }
         });
         mResultScrollView.setVerticalScrollBarEnabled(true);
 
-        printToScrollbar("Please Connect Serial Device");
+
+        printToScrollbar(getString(R.string.before_connect_device));
+
         Log.d("","");
 
         //A little bit ugly
         activity = this;
+    }
+
+    @Override
+    protected void onResume() {
+
+        loadAppConfiguration();
+        setDeviceConnectionIndication(DeviceConnection.isDeviceConnected);
+        dv.registerDevice(this);
+
+        if (demoProfile.equals(ApplicationData.HANNOVER_MESSE)) {
+            mFirstActionButton.setText(R.string.restart_button);
+            mSecondActionButton.setText(R.string.diagnostics_button);
+        } else {
+            mFirstActionButton.setText(R.string.read_data_button);
+            mSecondActionButton.setText(R.string.configure_button);
+        }
+
+        super.onResume();
+    }
+
+
+    @Override
+    protected void onStop() {
+        dv.unregisterDevice(this);
+        super.onStop();
+    }
+
+    private void loadAppConfiguration() {
+
+        JSONObject jsonStored =  dataHandler.getJsonStringData(
+                appDataSharedPreferencesKeyValue,
+                SendMessageUsbActivity.this);
+
+        if (null != jsonStored) {
+            applicationData = new ApplicationData(jsonStored);
+            demoProfile = applicationData.getDemoMode();
+        } else {
+            Log.d("","Stored app data is empty");
+        }
+    }
+
+    public static void setDeviceConnectionIndication(boolean isConnected) {
+        if (null != mSerialConnectIndecationImageView) {
+            if (isConnected) {
+                mSerialConnectIndecationImageView.setImageResource(R.drawable.connected);
+
+            } else {
+                mSerialConnectIndecationImageView.setImageResource(R.drawable.not_connected);
+            }
+        }
     }
 
     public void sendConfigureMessageToDevice(int degreeNumber) {
@@ -281,7 +297,7 @@ public class SendMessageUsbActivity extends AppCompatActivity {
                 CommandConstants.CONFIGURE,
                 cmdParams);
 
-        printToScrollbar("Sending Configure message to Serial device");
+        printToScrollbar(getString(R.string.configure_to_device));
         new SendMessageUsbActivity.sendMessageToUsbSerialDevice().execute(serialDeviceCmd);
     }
 
@@ -300,8 +316,8 @@ public class SendMessageUsbActivity extends AppCompatActivity {
         linearLayout.addView(aNumberPicker,numPicerParams);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
-        alertDialogBuilder.setTitle("Select a number:");
-        alertDialogBuilder.setMessage("Is it cold or warm?");
+        alertDialogBuilder.setTitle("Target temperature");
+        alertDialogBuilder.setMessage("Set target temperature:");
         alertDialogBuilder.setView(linearLayout);
         alertDialogBuilder
                 .setCancelable(false)
@@ -323,20 +339,6 @@ public class SendMessageUsbActivity extends AppCompatActivity {
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
     }
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        registerDevice();
-    }
-
-    @Override
-    protected void onStop()
-    {
-        unregisterReceiver(mUsbReceiver);
-        cleanDeviceConnection();
-        super.onStop();
-    }
 
     public void printToScrollbarWithColor(String text, int color) {
 
@@ -347,29 +349,10 @@ public class SendMessageUsbActivity extends AppCompatActivity {
     }
 
     public void printToScrollbar(String text) {
-        printToScrollbarWithColor(text, Color.parseColor("#A4C639"));
+        printToScrollbarWithColor(text, Color.parseColor("#000000"));
     }
 
-    private void cleanDeviceConnection() {
-        if (isDeviceConnected) {
-            try {
-                if (null != mConnection) {
-                    mConnection.close();
-                }
-                if (null != mSerialPort) {
-                    mSerialPort.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
-            mSerialConnectIndecationImageView.setImageResource(R.drawable.not_connected);
-            isDeviceConnected = false;
-            mConnectSerialDeviceButton.setText("Connect Serial Device");
-            printToScrollbar("Serial device DISCONNECTED!");
-        }
-
-    }
     public class sendMessageToUsbSerialDevice extends AsyncTask<SerialDeviceCmd, Void, OperationResponse> {
 
         @Override
@@ -401,91 +384,29 @@ public class SendMessageUsbActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(OperationResponse result) {
             if (null != result ) {
-                printToScrollbar("Result:");
-                printToScrollbar("ACCESS GRANTED");
+                printToScrollbar(getString(R.string.op_result));
+                printToScrollbar(getString(R.string.access_granted));
 //                printToScrollbar("getResponseStatus: " + String.valueOf(result.getResponseStatus()));
 //                printToScrollbar("getValue: " + String.valueOf(result.getType().getValue()));
                 System.out.println(String.valueOf(result.getResponseStatus()));
                 System.out.println(String.valueOf(result.getType().getValue()));
-                onButtonShowPopupWindowClick(Color.GREEN,"Action ended Successfully");
+
+                if (null != result.getBlob()) {
+                    saveBlobToFile(result.getBlob());
+                }
+
+                onButtonShowPopupWindowClick(
+                        Color.parseColor("#388E3C"),
+                        getString(R.string.op_ended_successfully_popup));
             } else {
                 //TODO: return the real error?
-                printToScrollbar("Result:");
-                printToScrollbar("ACCESS DENIED");
-                onButtonShowPopupWindowClick(Color.RED,"ACCESS DENIED!");
+                printToScrollbar(getString(R.string.op_result));
+                printToScrollbar(getString(R.string.access_denied));
+                onButtonShowPopupWindowClick(
+                        Color.parseColor("#F44336"),
+                        getString(R.string.op_access_denied_popup));
             }
         }
-    }
-
-    private void registerDevice() {
-        mUsbManager = (UsbManager)getSystemService(Context.USB_SERVICE);
-
-        // Register an intent filter so we can get permission to connect
-        // to the device and get device attached/removed messages
-        mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        registerReceiver(mUsbReceiver, filter);
-    }
-
-
-    private void checkPermissionAndConnectDevice() {
-
-        HashMap<String, UsbDevice> usbDevices = mUsbManager.getDeviceList();
-        if (usbDevices.size() > 0) {
-            Map.Entry<String, UsbDevice> entry = usbDevices.entrySet().iterator().next();
-            mUsbDevice = usbDevices.get(entry.getKey());
-            boolean hasPermision = mUsbManager.hasPermission(mUsbDevice);
-            if (!hasPermision) {
-                mUsbManager.requestPermission(mUsbDevice, mPermissionIntent);
-            } else {
-                connectToDevice();
-            }
-        }
-        else {
-            AndroidUtils.customToast(
-                    SendMessageUsbActivity.this,
-                    "Unrecognized OR no device connected",
-                    Color.RED
-            );
-        }
-    }
-
-    private void connectToDevice() {
-        // Open a connection to the first available driver.
-
-        List<UsbSerialDriver> availableDrivers;
-        availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(mUsbManager);
-        if (availableDrivers.isEmpty()) {
-            return;
-        }
-        UsbSerialDriver driver = availableDrivers.get(0);
-        mConnection = mUsbManager.openDevice(driver.getDevice());
-        if (mConnection == null) {
-            // You probably need to call UsbManager.requestPermission(driver.getDevice(), ..)
-            Toast.makeText(this, "Device Permission before exit:", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        // Read some data! Most have just one port (port 0).
-        mSerialPort = driver.getPorts().get(0);
-        try {
-            mSerialPort.open(mConnection);
-            mSerialPort.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        //serialHandler = new SerialHandler(serialPort);
-
-        //Prepare device
-        device = new ArmUsbDevice(mSerialPort);
-        mSerialConnectIndecationImageView.setImageResource(R.drawable.connected);
-        mConnectSerialDeviceButton.setText("Disconnect Device");
-        isDeviceConnected = true;
-        printToScrollbar("Serial device CONNECTED!");
     }
 
     public void onButtonShowPopupWindowClick(int color, String text) {
@@ -503,6 +424,7 @@ public class SendMessageUsbActivity extends AppCompatActivity {
 
         TextView mResultText = (TextView) popupView.findViewById(R.id.PopupTextView);
         mResultText.setText(text);
+        mResultText.setTextColor(Color.WHITE);
 
 //        TextView tx = findViewById(R.id.PopupTextView);
 //        tx.setText(text);
@@ -524,6 +446,28 @@ public class SendMessageUsbActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    private void saveBlobToFile(byte[] blob) {
+
+        FileOutputStream outputStream;
+        File logFile;
+
+        logFile = new File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "Blob.txt");
+        try {
+            Log.d("BLOB_FILE", "Opening log file");
+            outputStream = new FileOutputStream(logFile, true);
+            Log.i("BLOB_FILE_WRITE", "Writning Blob");
+            printToScrollbar("#Up to 100 first Chars from Blob STR");
+            String blobStr = new String(blob, "UTF-8");
+            printToScrollbar(blobStr.substring(0, Math.min(100, blobStr.length())));
+            printToScrollbar("#End Print Blob STR");
+            outputStream.write(blob);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

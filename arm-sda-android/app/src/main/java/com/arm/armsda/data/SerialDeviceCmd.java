@@ -13,7 +13,7 @@
 // ----------------------------------------------------------------------------
 package com.arm.armsda.data;
 
-import com.arm.mbed.dbauth.proxysdk.operation.ParamElement;
+import com.arm.mbed.sda.proxysdk.operation.ParamElement;
 
 public class SerialDeviceCmd {
 

@@ -21,57 +21,45 @@
     android:id="@+id/activity_main_layout"
     tools:context="com.arm.armsda.activities.SendMessageUsbActivity">
 
-    <Button
-        android:id="@+id/ConnectSerialDeviceButton"
-        android:theme="@style/AppTheme.ButtonConnect"
-        android:layout_width="250dp"
-        android:layout_height="60dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/SerialConnectIndecationImageView"
-        android:text="Connect Serial Device"
-        android:textSize="22sp" />
-
     <ImageView
-        android:id="@+id/SerialConnectIndecationImageView"
-        android:layout_width="50dp"
-        android:layout_height="60dp"
+        android:id="@+id/SerialConnectIndicationImageView"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         app:srcCompat="@drawable/not_connected" />
 
     <Button
         android:id="@+id/ReadDataButton"
-        android:theme="@style/AppTheme.Button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/ConnectSerialDeviceButton"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
+        android:text="@string/read_data_button"
         android:textSize="22sp"
-        android:text="Read Data" />
+        android:theme="@style/AppTheme.Button" />
 
     <Button
         android:id="@+id/ConfigureButton"
-        android:theme="@style/AppTheme.Button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/ReadDataButton"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/ReadDataButton"
-        android:layout_marginTop="23dp"
+        android:layout_marginTop="17dp"
+        android:text="@string/configure_button"
         android:textSize="22sp"
-        android:text="Configure" />
+        android:theme="@style/AppTheme.Button" />
 
     <Button
         android:id="@+id/UpdateButton"
-        android:theme="@style/AppTheme.Button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/ConfigureButton"
-        android:layout_centerHorizontal="true"
         android:layout_marginTop="17dp"
+        android:text="@string/update_button"
         android:textSize="22sp"
-        android:text="Update" />
+        android:theme="@style/AppTheme.Button" />
 
     <ScrollView
         android:id="@+id/ResultScrollView"
@@ -89,7 +77,7 @@
             android:layout_height="wrap_content"
             android:scrollbars="vertical"
             android:textSize="18sp"
-            android:background="#000000" />
+            android:background="#ECEFF1" />
 
     </ScrollView>
 

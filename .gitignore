@@ -14,3 +14,5 @@ mbed-base/
 /arm-sda-android/usbSerialForAndroid/build
 /proxy-dev/test-output/*
 /.metadata/*
+*.idea*
+*__pycache__*

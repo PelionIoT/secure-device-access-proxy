@@ -17,9 +17,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -28,16 +28,19 @@ import android.widget.Toast;
 
 import com.arm.armsda.R;
 import com.arm.armsda.data.AccessTokens;
+import com.arm.armsda.data.ApplicationData;
 import com.arm.armsda.data.DeviceName;
 import com.arm.armsda.data.IDataHandler;
 import com.arm.armsda.data.SharedPreferencesHandleData;
+import com.arm.armsda.serial.DeviceConnection;
+import com.arm.armsda.settings.ActionBarDrawerActivity;
 import com.arm.armsda.utils.AndroidUtils;
 import com.arm.armsda.data.CommandConstants;
-import com.arm.mbed.dbauth.proxysdk.ProxyException;
-import com.arm.mbed.dbauth.proxysdk.SecuredDeviceAccess;
-import com.arm.mbed.dbauth.proxysdk.http.CreateAccessTokenRequest;
-import com.arm.mbed.dbauth.proxysdk.http.HttpErrorResponseException;
-import com.arm.mbed.dbauth.proxysdk.server.UserPasswordServer;
+import com.arm.mbed.sda.proxysdk.ProxyException;
+import com.arm.mbed.sda.proxysdk.SecuredDeviceAccess;
+import com.arm.mbed.sda.proxysdk.http.CreateAccessTokenRequest;
+import com.arm.mbed.sda.proxysdk.http.HttpErrorResponseException;
+import com.arm.mbed.sda.proxysdk.server.UserPasswordServer;
 import com.google.gson.Gson;
 
 import org.apache.commons.lang3.StringUtils;
@@ -46,13 +49,13 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AccessTokenActivity extends AppCompatActivity {
+public class AccessTokenActivity extends ActionBarDrawerActivity {
 
     //Views
     private UserPasswordServer mAuthServer;
-    private CheckBox mReadDataCheckBox;
-    private CheckBox mConfigureCheckBox;
-    private CheckBox mUpdateCheckBox;
+    private CheckBox mFirstCheckBox;
+    private CheckBox mSecondCheckBox;
+    private CheckBox mThirdCheckBox;
     private Button mGetPermissionsButton;
     private EditText mDeviceNameEditText;
 
@@ -65,19 +68,29 @@ public class AccessTokenActivity extends AppCompatActivity {
     private DeviceName deviceName;
     private Gson gson = new Gson();
 
+    private DeviceConnection dv = new DeviceConnection();
+    private String demoProfile;
+    private static final String appDataSharedPreferencesKeyValue = "appDataDetails";
+    private ApplicationData applicationData;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_access_token);
+
+        //Setting Drawer
+        LayoutInflater inflater = (LayoutInflater) this
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View contentView = inflater.inflate(R.layout.activity_access_token, null, false);
+        mDrawerLayout.addView(contentView, 0);
 
         Log.d("","");
 
         mAuthServer = (UserPasswordServer)getIntent().getSerializableExtra("authServer");
         getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        mReadDataCheckBox = findViewById(R.id.ReadDataCheckBox);
-        mConfigureCheckBox = findViewById(R.id.ConfigureCheckBox);
-        mUpdateCheckBox = findViewById(R.id.UpdateCheckBox);
+        mFirstCheckBox = findViewById(R.id.ReadDataCheckBox);
+        mSecondCheckBox = findViewById(R.id.ConfigureCheckBox);
+        mThirdCheckBox = findViewById(R.id.UpdateCheckBox);
         mDeviceNameEditText = findViewById(R.id.DeviceNameEditText);
 
         mGetPermissionsButton = findViewById(R.id.GetPermissionsButton);
@@ -89,19 +102,31 @@ public class AccessTokenActivity extends AppCompatActivity {
                 StringBuffer scopeSb = new StringBuffer();
 
                 //Must stay the first one.
-                if (mReadDataCheckBox.isChecked()) {
-                    scopeSb.append(CommandConstants.READ_DATA);
-                }
-
-                if (mConfigureCheckBox.isChecked()) {
-                    if (!StringUtils.isEmpty(scopeSb)) {
-                        scopeSb.append(" " + CommandConstants.CONFIGURE);
+                if (mFirstCheckBox.isChecked()) {
+                    if (demoProfile.equals(ApplicationData.HANNOVER_MESSE)) {
+                        scopeSb.append(CommandConstants.RESTART);
                     } else {
-                        scopeSb.append(CommandConstants.CONFIGURE);
+                        scopeSb.append(CommandConstants.READ_DATA);
                     }
                 }
 
-                if (mUpdateCheckBox.isChecked()) {
+                if (mSecondCheckBox.isChecked()) {
+                    if (demoProfile.equals(ApplicationData.HANNOVER_MESSE)) {
+                        if (!StringUtils.isEmpty(scopeSb)) {
+                            scopeSb.append(" " + CommandConstants.DIAGNOSTICS);
+                        } else {
+                            scopeSb.append(CommandConstants.DIAGNOSTICS);
+                        }
+                    } else {
+                        if (!StringUtils.isEmpty(scopeSb)) {
+                            scopeSb.append(" " + CommandConstants.CONFIGURE);
+                        } else {
+                            scopeSb.append(CommandConstants.CONFIGURE);
+                        }
+                    }
+                }
+
+                if (mThirdCheckBox.isChecked()) {
                     if (!StringUtils.isEmpty(scopeSb)) {
                         scopeSb.append(" " + CommandConstants.UPDATE);
                     } else {
@@ -109,7 +134,11 @@ public class AccessTokenActivity extends AppCompatActivity {
                     }
                 }
 
-                    if (StringUtils.isEmpty(scopeSb)) {
+                if (StringUtils.isEmpty(scopeSb)) {
+                    Context context = AccessTokenActivity.this;
+                    AndroidUtils.customToast(context,
+                            "Please choose one or more permissions",
+                            Color.BLUE);
                     return;
                 }
 
@@ -134,6 +163,26 @@ public class AccessTokenActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+
+        loadAppConfiguration();
+        dv.registerDevice(this);
+
+        if (demoProfile.equals(ApplicationData.HANNOVER_MESSE)) {
+            mFirstCheckBox.setText(R.string.restart_button);
+            mSecondCheckBox.setText(R.string.diagnostics_button);
+        } else {
+            mFirstCheckBox.setText(R.string.read_data_button);
+            mSecondCheckBox.setText(R.string.configure_button);
+        }
+        mFirstCheckBox.setChecked(false);
+        mSecondCheckBox.setChecked(false);
+        mThirdCheckBox.setChecked(false);
+
+        super.onResume();
+    }
+
+    @Override
     protected void onStop()
     {
         deviceName = new DeviceName(mDeviceNameEditText.getText().toString());
@@ -145,7 +194,22 @@ public class AccessTokenActivity extends AppCompatActivity {
                     deviceName.toJsonObject(),
                     AccessTokenActivity.this);
         }
+        dv.unregisterDevice(this);
         super.onStop();
+    }
+
+    private void loadAppConfiguration() {
+
+        JSONObject jsonStored =  dataHandler.getJsonStringData(
+                appDataSharedPreferencesKeyValue,
+                AccessTokenActivity.this);
+
+        if (null != jsonStored) {
+            applicationData = new ApplicationData(jsonStored);
+            demoProfile = applicationData.getDemoMode();
+        } else {
+            Log.d("","Stored app data is empty");
+        }
     }
 
     public class httpCallAccessToken extends AsyncTask<CreateAccessTokenRequest, Void, String> {
@@ -185,7 +249,8 @@ public class AccessTokenActivity extends AppCompatActivity {
 
                 return res;
             } catch (ProxyException e) {
-                res = "Error: Ooops, Something Bad Happened: " + e.getMessage();
+                res = "Error: Please check your Internet connection or URL configuration";
+                Log.d("AccessTokenActivity", "exception: " + e.getMessage());
                 return res;
             } catch (HttpErrorResponseException e) {
                 res = "Error: " + e.getHttpErrorStatusCode() + "\nMessage: " + e.getHttpErrorMessage();

@@ -92,7 +92,7 @@ public class CdcAcmSerialDriver implements UsbSerialDriver {
 
         public CdcAcmSerialPort(UsbDevice device, int portNumber) {
             super(device, portNumber);
-            //TODO:: OFER - changed to false to support timeout in read operation
+            //Changed to false to support timeout in read operation
             mEnableAsyncReads = false;//(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1);
         }
 

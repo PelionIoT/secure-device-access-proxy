@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.arm.armsda.settings.UserSettingsActivity">
+
+    <EditText
+        android:id="@+id/accountIdEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/accountIdTextView"
+        android:layout_marginTop="11dp"
+        android:ems="10"
+        android:inputType="textPersonName" />
+
+    <TextView
+        android:id="@+id/accountIdTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="75dp"
+        android:theme="@style/TextViewFont"
+        android:text="@string/settings_account_id" />
+
+    <TextView
+        android:id="@+id/cloudUrlTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/accountIdEditText"
+        android:layout_marginTop="40dp"
+        android:theme="@style/TextViewFont"
+        android:text="@string/settings_cloud_url" />
+
+    <EditText
+        android:id="@+id/cloudUrlEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/accountIdEditText"
+        android:layout_below="@+id/cloudUrlTextView"
+        android:layout_marginTop="16dp"
+        android:ems="10"/>
+
+    <Button
+        android:id="@+id/userSettingsOkButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/cloudUrlEditText"
+        android:layout_marginStart="33dp"
+        android:layout_marginTop="78dp"
+        android:layout_toEndOf="@+id/accountIdTextView"
+        android:text="@string/ok_button"
+        android:textAlignment="center"
+        android:theme="@style/AppTheme.Button" />
+</RelativeLayout>

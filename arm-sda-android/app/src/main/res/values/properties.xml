@@ -13,7 +13,7 @@
 <!-- from ARM Limited or its affiliates.                                     -->
 <!--                                                                         -->
 <resources>
-    <string name="env_url">https://lab-api.mbedcloudintegration.net</string>
-    <string name="account_id">015fe355256f8278f23bfe1f00000000</string>
-    <string name="device_ep">Mbed1</string>
+    <string name="env_url">https://api.us-east-1.mbedcloud.com</string>
+    <string name="account_id">Your account ID goes here</string>
+	<string name="device_ep">Paste your device endpoint name here from developer certificate</string>
 </resources>
