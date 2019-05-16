@@ -1,14 +1,14 @@
 
 # Using the SDA Proxy SDK
 
-There is an SDK to help you create a proxy application for an Android device so that a user (such as service technician) can configure or maintain an IoT device. Android developers should use the (SDA Proxy SDK)[https://github.com/ARMmbed/secure-device-access-proxy-sources-internal/tree/master/proxy] as a library. There is an (Android demo app)[https://github.com/ARMmbed/secure-device-access-proxy-sources-internal/tree/master/arm-sda-android] using this SDK.
+There is an SDK to help you create a proxy application for an Android device so that a user (such as service technician) can configure or maintain an IoT device. Android developers should use the (SDA Proxy SDK)[https://github.com/ARMmbed/secure-device-access-proxy-restricted/tree/master/proxy] as a library. There is an (Android demo app)[https://github.com/ARMmbed/secure-device-access-proxy-restricted/tree/master/arm-sda-android] using this SDK.
 
 <span class="notes">**Note** Secure Device Access is a premium feature, so you will only have access to the SDK if you have paid for this feature.  If you believe that you should have access to this repository, contact the [Pelion Device Management support team](https://cloud.mbed.com/contact) to get access. </span>
 
 ## Proxy SDK APIs
 
 A developer wanting to create an application to implement Secure Device Access will need to know the following class: 
-https://github.com/ARMmbed/secure-device-access-proxy-sources-internal/blob/master/proxy/src/main/java/com/arm/mbed/sda/proxysdk/SecuredDeviceAccess.java
+https://github.com/ARMmbed/secure-device-access-proxy-restricted/blob/master/proxy/src/main/java/com/arm/mbed/sda/proxysdk/SecuredDeviceAccess.java
 
 This class is the interface used to access the SDK functionality, you should call it from its application and use its methods as described below.
 
@@ -60,7 +60,7 @@ Use the following method to send a function to the IoT device:
 `public static OperationResponse sendMessage( String accessToken, String cmd, ParamElement[] params, IDevice device )`
 
 * **Response**: The `OperationResponse` object shows the response coming from the IoT device and it includes the following attributes:
-     * Success or error code; at the IoT device side, the value is defined at: https://github.com/ARMmbed/secure-device-access-client-sources-internal/blob/master/secure-device-access/secure-device-access/sda_status.h
+     * Success or error code; at the IoT device side, the value is defined at: https://github.com/ARMmbed/secure-device-access-client-restricted/blob/master/secure-device-access/secure-device-access/sda_status.h
      * The optional blob (of type byte[]) returned from the device
 
     In the Proxy SDK it is part of the proprietary message protocol used with the device in the package: `com.arm.mbed.dbauth.proxysdk.protocol`. Relevant classes are:
