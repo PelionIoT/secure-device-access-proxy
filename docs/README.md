@@ -3,7 +3,7 @@
 The documentation in this folder is for the proxy SDK and the SDA Service running in Pelion Device Management. The SDK takes care of Device Management access given credentials, but the service APIs are documented here for completeness. The SDK APIs are used by Android application developers to get an access token and send the operation bundle message to the device as part of the SDA flow.
 
 ## Proxy SDK documentation
-Located here at [proxy_sdk_apis.md](https://github.com/ARMmbed/secure-device-access-proxy-sources-internal/blob/master/docs/proxy_sdk_apis.md)
+Located here at [proxy_sdk_apis.md](https://github.com/ARMmbed/secure-device-access-proxy-restricted/blob/master/docs/proxy_sdk_apis.md)
 
 ## SDA Services APIs
 
