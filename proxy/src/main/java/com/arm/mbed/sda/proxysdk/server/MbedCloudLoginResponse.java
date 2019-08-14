@@ -16,6 +16,9 @@
 // ----------------------------------------------------------------------------
 package com.arm.mbed.sda.proxysdk.server;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MbedCloudLoginResponse {
 
     private String account_id;
