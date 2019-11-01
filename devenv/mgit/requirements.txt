@@ -1,2 +1,2 @@
 click==6.7
-PyYaml==3.12
+PyYaml==5.1
