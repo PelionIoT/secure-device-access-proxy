@@ -19,7 +19,7 @@ package com.arm.mbed.sda.proxysdk.http;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-//TODO remove
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ErrorObjectResponse {
 
